@@ -1,0 +1,39 @@
+# =========================================================================
+# EP Website Security & Server Configuration (.htaccess)
+# =========================================================================
+
+# 1. ปิดการแสดงรายชื่อไฟล์ในโฟลเดอร์ (Prevent Directory Browsing)
+Options -Indexes
+
+# 2. กำหนดชุดตัวอักษรเริ่มต้นเป็น UTF-8
+AddDefaultCharset UTF-8
+
+# 3. บล็อกการเข้าถึงไฟล์และโฟลเดอร์ที่ขึ้นต้นด้วยจุด (Hidden Files/Folders เช่น .git, .env, .vscode, .agents)
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Deny,Allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 4. บล็อกการเข้าถึงไฟล์โค้ดภายใน, สคริปต์แบ็กเอนด์, ฐานข้อมูล, และแบ็กอัปโดยตรง
+<FilesMatch "\.(json|py|sql|log|sh|bat|cmd|md|bak|backup|curr|prev|reconstructed)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Deny,Allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 5. HTTP Security Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>

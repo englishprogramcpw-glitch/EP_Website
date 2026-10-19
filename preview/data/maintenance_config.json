@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "redirect_to_facebook": true,
+  "facebook_url": "https://www.facebook.com/profile.php?id=100093686707861",
+  "title_th": "เว็บไซต์โครงการฯ ภาคภาษาอังกฤษ อยู่ระหว่างการปรับปรุงข้อมูล",
+  "title_en": "English Program Website Under Maintenance",
+  "message_th": "ขณะนี้เว็บไซต์อยู่ระหว่างการจัดเตรียมและตรวจทานความถูกต้องของข้อมูลตามมาตรฐานของโรงเรียนชลประทานวิทยา เพื่อให้ข้อมูลมีความถูกต้องและสมบูรณ์ที่สุดก่อนเปิดให้บริการ ขออภัยในความไม่สะดวก",
+  "message_en": "Our website is currently undergoing content preparation and verification according to Chonprathan Wittaya School standards. We apologize for any inconvenience.",
+  "allow_admin": true,
+  "updated_at": "2026-10-19 09:50:00",
+  "updated_by": "admin"
+}

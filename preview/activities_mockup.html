@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <link rel="icon" type="image/png" href="img/cpw_logo_en.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบข่าวสารและกิจกรรมโครงการ EP (ข้อมูลจริงจากเว็บหลัก)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Font Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen py-16 px-4 sm:px-6 lg:px-8">
+
+    <div class="max-w-6xl mx-auto space-y-16">
+        
+        <!-- Header -->
+        <div class="text-center space-y-4">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-bold uppercase tracking-wider">
+                Live Data Synchronized
+            </span>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">
+                ข่าวประกาศและกิจกรรมเฉพาะโครงการ EP
+            </h1>
+            <p class="text-slate-550 text-sm sm:text-base max-w-2xl mx-auto">
+                หน้าเว็บตัวอย่างที่ดึงข้อมูลจริงจากเว็บหลักโรงเรียนชลประทานวิทยา (<a href="https://www.cpw.ac.th" target="_blank" class="text-indigo-600 hover:underline">www.cpw.ac.th</a>) และคัดกรองอัตโนมัติเรียบร้อยแล้ว
+            </p>
+        </div>
+
+        <!-- Tab Controls -->
+        <div class="flex justify-center border-b border-slate-200">
+            <nav class="flex space-x-8" aria-label="Tabs">
+                <button onclick="switchTab('activities')" id="tab-activities" class="border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-lg transition-all">
+                    <i class="fa-regular fa-images mr-2"></i> ภาพกิจกรรมโครงการ EP
+                </button>
+                <button onclick="switchTab('news')" id="tab-news" class="border-transparent text-slate-500 hover:text-slate-750 hover:border-slate-350 whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-lg transition-all">
+                    <i class="fa-regular fa-newspaper mr-2"></i> ข่าวประชาสัมพันธ์ & ประกาศ
+                </button>
+            </nav>
+        </div>
+
+        <!-- Activities Section -->
+        <div id="section-activities" class="space-y-8">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="w-1.5 h-6 bg-indigo-500 rounded-full"></span>
+                    อัลบั้มภาพกิจกรรมล่าสุด
+                </h2>
+                <span id="activities-count" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full">กำลังโหลด...</span>
+            </div>
+            
+            <div id="activities-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Activity cards will be inserted here dynamically -->
+                <div class="col-span-full text-center py-12 text-slate-400">
+                    <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-indigo-500"></i>
+                    <p>กำลังดาวน์โหลดอัลบั้มกิจกรรมของ EP...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- News Section (Hidden by default) -->
+        <div id="section-news" class="space-y-8 hidden">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="w-1.5 h-6 bg-indigo-500 rounded-full"></span>
+                    ข่าวประชาสัมพันธ์และประกาศสำคัญ
+                </h2>
+                <span id="news-count" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full">กำลังโหลด...</span>
+            </div>
+            
+            <div id="news-list" class="space-y-4">
+                <!-- News items will be inserted here dynamically -->
+                <div class="text-center py-12 text-slate-400">
+                    <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-indigo-500"></i>
+                    <p>กำลังดาวน์โหลดรายการประกาศของ EP...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Sync Explain Card -->
+        <div class="bg-indigo-50/50 rounded-2xl p-6 border border-indigo-100 flex gap-4 items-start">
+            <span class="text-2xl mt-1 text-indigo-600"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+            <div class="space-y-1.5">
+                <h4 class="font-bold text-slate-800 text-sm sm:text-base">ระบบซิงก์ข้อมูลอัจฉริยะแบบไร้รอยต่อ (Seamless Sync):</h4>
+                <p class="text-xs sm:text-sm text-slate-655 leading-relaxed font-light">
+                    ระบบดึงข้อมูลจากเว็บไซต์หลักมาแสดงโดยคัดกรองอัตโนมัติ ทำให้คุณลงกิจกรรมแค่เพียงช่องทางเดียวบนเว็บไซต์หลักโรงเรียน ข้อมูลจะถูกดึงมาแสดงบนหน้าเว็บของแผนก EP ทันที พร้อมระบบเปิดรูปภาพกิจกรรมดูในหน้าต่างบ็อปอัพ (Native Lightbox Viewer) โดยตรงโดยไม่ต้องสลับหน้าจอกลับไปยังเว็บหลักอีกต่อไป
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- GALLERY MODAL (อัลบั้มรูปภาพกิจกรรมแบบแสดงภายในเว็ป) -->
+    <div id="galleryModal" class="fixed inset-0 z-50 overflow-y-auto hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+        <div class="relative bg-white rounded-3xl w-full max-w-5xl overflow-hidden shadow-2xl border border-slate-200 flex flex-col h-[90vh]">
+            <!-- Header -->
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div>
+                    <h3 id="galleryModalTitle" class="text-xl font-bold text-slate-900 line-clamp-1"></h3>
+                    <p id="galleryModalDate" class="text-xs text-slate-400"></p>
+                </div>
+                <button onclick="closeGalleryModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold transition">
+                    &times;
+                </button>
+            </div>
+            
+            <!-- Scrollable Wrapper -->
+            <div class="p-6 overflow-y-auto flex-grow bg-slate-50/30">
+                <!-- Grid Container -->
+                <div id="galleryModalGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    <!-- Thumbnails will be injected here -->
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center gap-3">
+                <span id="galleryModalCount" class="text-xs sm:text-sm text-slate-500"></span>
+                <a id="galleryModalOriginalLink" href="#" target="_blank" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <span>เปิดอัลบั้มจริงบนเว็บหลัก</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX OVERLAY (แสดงรูปภาพขยายเต็มจอพร้อมปุ่มสไลด์ซ้ายขวา) -->
+    <div id="lightboxOverlay" class="fixed inset-0 z-[60] bg-black/95 flex flex-col justify-between items-center p-4 hidden">
+        <!-- Close & Controls Header -->
+        <div class="w-full flex justify-between items-center max-w-6xl text-white">
+            <span id="lightboxIndex" class="text-xs sm:text-sm font-semibold text-slate-300"></span>
+            <button onclick="closeLightbox()" class="text-white text-3xl font-bold hover:text-slate-300 transition w-12 h-12 flex items-center justify-center">
+                &times;
+            </button>
+        </div>
+        
+        <!-- Image & Navigation Arrows -->
+        <div class="relative w-full flex-grow flex items-center justify-center max-w-6xl">
+            <!-- Left Arrow -->
+            <button onclick="prevLightboxImage()" class="absolute left-2 z-10 text-white hover:text-slate-300 transition text-4xl w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20">
+                &#10094;
+            </button>
+            
+            <img id="lightboxImg" src="" alt="Fullscreen image" class="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl transition-all duration-350">
+            
+            <!-- Right Arrow -->
+            <button onclick="nextLightboxImage()" class="absolute right-2 z-10 text-white hover:text-slate-300 transition text-4xl w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20">
+                &#10095;
+            </button>
+        </div>
+        
+        <!-- Caption/Footer -->
+        <div class="w-full text-center text-slate-400 text-xs sm:text-sm py-4 max-w-3xl truncate" id="lightboxCaption">
+        </div>
+    </div>
+
+    <!-- Page Logic -->
+    <script>
+        let allActivities = [];
+        let currentAlbumImages = [];
+        let currentLightboxIndex = 0;
+
+        // Switch between Activities and News tab
+        function switchTab(tab) {
+            const tabAct = document.getElementById('tab-activities');
+            const tabNews = document.getElementById('tab-news');
+            const secAct = document.getElementById('section-activities');
+            const secNews = document.getElementById('section-news');
+            
+            if (tab === 'activities') {
+                tabAct.className = "border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-lg transition-all";
+                tabNews.className = "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-lg transition-all";
+                secAct.classList.remove('hidden');
+                secNews.classList.add('hidden');
+            } else {
+                tabNews.className = "border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-lg transition-all";
+                tabAct.className = "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-lg transition-all";
+                secNews.classList.remove('hidden');
+                secAct.classList.add('hidden');
+            }
+        }
+
+        // Fetch and load database files
+        async function loadData() {
+            try {
+                // 1. Fetch activities
+                const actRes = await fetch('data/db_activities.json');
+                allActivities = await actRes.json();
+                renderActivities(allActivities);
+                
+                // 2. Fetch news
+                const newsRes = await fetch('data/db_news.json');
+                const news = await newsRes.json();
+                renderNews(news);
+            } catch (err) {
+                console.error("Failed to load data files:", err);
+                document.getElementById('activities-grid').innerHTML = `
+                    <div class="col-span-full text-center py-12 text-red-500">
+                        <i class="fa-solid fa-triangle-exclamation text-3xl mb-3"></i>
+                        <p>ล้มเหลวในการอ่านไฟล์ฐานข้อมูล กรุณาตรวจสอบการรัน sync_news.py</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Render activities to grid
+        function renderActivities(list) {
+            const grid = document.getElementById('activities-grid');
+            document.getElementById('activities-count').textContent = `${list.length} อัลบั้มของ EP`;
+            
+            if (list.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-slate-400">
+                        <i class="fa-regular fa-image text-3xl mb-3"></i>
+                        <p>ไม่พบอัลบั้มภาพกิจกรรมของ EP บนเว็บหลักในขณะนี้</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = list.map((item, idx) => `
+                <div class="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-slate-100 transition-all duration-300 flex flex-col h-full transform hover:-translate-y-1">
+                    <!-- Image Wrapper -->
+                    <div class="relative aspect-[3/2] overflow-hidden bg-slate-200">
+                        <img src="${item.imageUrl}" 
+                             alt="${item.title}" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                             onerror="this.src='https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&amp;auto=format&amp;fit=crop&amp;q=60'">
+                        <!-- Photo Count Badge -->
+                        <span class="absolute bottom-3 right-3 bg-slate-950/75 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
+                            <i class="fa-regular fa-image"></i> ${item.photoCount} รูป
+                        </span>
+                        <!-- Tag -->
+                        <span class="absolute top-3 left-3 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                            กิจกรรม EP
+                        </span>
+                    </div>
+                    <!-- Content Area -->
+                    <div class="p-6 flex flex-col flex-grow space-y-4">
+                        <div class="flex items-center text-xs text-slate-450 gap-2">
+                            <i class="fa-regular fa-calendar"></i>
+                            <span>${item.date}</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-805 group-hover:text-indigo-650 transition-colors line-clamp-2 leading-snug" title="${item.title}">
+                            ${item.title}
+                        </h3>
+                        <p class="text-sm text-slate-500 line-clamp-2 leading-relaxed flex-grow font-light">
+                            รับชมประมวลภาพและภาพความสำเร็จอันน่าภาคภูมิใจของน้องๆ นักเรียนในโครงการ EP ทั้งหมดที่นี่
+                        </p>
+                        <button onclick="openGalleryModal(${idx})" 
+                           class="inline-flex items-center justify-center gap-1.5 w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-sm font-semibold py-2.5 px-4 rounded-xl transition-all border border-indigo-100 group-hover:border-indigo-200">
+                            <span>ดูภาพกิจกรรม</span>
+                            <i class="fa-regular fa-images text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render news to list
+        function renderNews(list) {
+            const container = document.getElementById('news-list');
+            document.getElementById('news-count').textContent = `${list.length} ประกาศของ EP`;
+            
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-400">
+                        <i class="fa-regular fa-newspaper text-3xl mb-3"></i>
+                        <p>ไม่พบข่าวประกาศของ EP บนเว็บหลักในขณะนี้</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = list.map(item => `
+                <div class="group bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="space-y-2 max-w-3xl">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <span class="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-0.5 rounded-md border border-indigo-100">
+                                ข่าวเด่น EP
+                            </span>
+                            <span class="text-xs text-slate-400 flex items-center gap-1">
+                                <i class="fa-regular fa-calendar"></i> ${item.date}
+                            </span>
+                        </div>
+                        <h3 class="text-base sm:text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">
+                            ${item.title}
+                        </h3>
+                        <p class="text-xs sm:text-sm text-slate-500 leading-relaxed line-clamp-1 font-light">
+                            ${item.content}
+                        </p>
+                    </div>
+                    
+                    <a href="${item.url}" target="_blank" 
+                       class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all shadow-sm flex-shrink-0 w-full md:w-auto justify-center">
+                        <span>เปิดไฟล์ประกาศ</span>
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </a>
+                </div>
+            `).join('');
+        }
+
+        // --- Gallery Modal & Lightbox Logic ---
+        function openGalleryModal(idx) {
+            const album = allActivities[idx];
+            if (!album) return;
+
+            document.getElementById('galleryModalTitle').textContent = album.title;
+            document.getElementById('galleryModalDate').textContent = album.date;
+            
+            const countText = `รูปภาพทั้งหมด ${album.photoCount} รูป`;
+            document.getElementById('galleryModalCount').textContent = countText;
+
+            const origLink = document.getElementById('galleryModalOriginalLink');
+            if (origLink) {
+                origLink.href = album.url;
+            }
+
+            const grid = document.getElementById('galleryModalGrid');
+            grid.innerHTML = '';
+
+            currentAlbumImages = album.images || [];
+
+            if (currentAlbumImages.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-slate-500">
+                        <i class="fa-regular fa-image text-3xl mb-2"></i>
+                        <p>ไม่มีรูปภาพในอัลบั้มนี้</p>
+                    </div>
+                `;
+            } else {
+                currentAlbumImages.forEach((imgUrl, imgIdx) => {
+                    const thumbDiv = document.createElement('div');
+                    thumbDiv.className = "group relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 cursor-pointer shadow-sm hover:shadow-md hover:scale-[1.02] transition duration-200 border border-slate-200/50";
+                    thumbDiv.onclick = () => openLightbox(imgIdx);
+                    
+                    thumbDiv.innerHTML = `
+                        <img src="${imgUrl}" alt="Photo ${imgIdx + 1}" class="w-full h-full object-cover" loading="lazy">
+                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                            <span class="text-white text-xl"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
+                        </div>
+                    `;
+                    grid.appendChild(thumbDiv);
+                });
+            }
+
+            document.getElementById('galleryModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeGalleryModal() {
+            document.getElementById('galleryModal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('galleryModal').onclick = function(e) {
+            if (e.target === this) {
+                closeGalleryModal();
+            }
+        };
+
+        // --- Fullscreen Lightbox Logic ---
+        function openLightbox(imgIdx) {
+            currentLightboxIndex = imgIdx;
+            updateLightbox();
+            document.getElementById('lightboxOverlay').classList.remove('hidden');
+            document.addEventListener('keydown', handleLightboxKeydown);
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightboxOverlay').classList.add('hidden');
+            document.removeEventListener('keydown', handleLightboxKeydown);
+        }
+
+        function updateLightbox() {
+            const imgUrl = currentAlbumImages[currentLightboxIndex];
+            const imgEl = document.getElementById('lightboxImg');
+            if (imgEl && imgUrl) {
+                imgEl.src = imgUrl;
+            }
+
+            const total = currentAlbumImages.length;
+            const indexText = `${currentLightboxIndex + 1} / ${total}`;
+            document.getElementById('lightboxIndex').textContent = indexText;
+            
+            const albumTitle = document.getElementById('galleryModalTitle').textContent;
+            document.getElementById('lightboxCaption').textContent = `${albumTitle} - รูปที่ ${currentLightboxIndex + 1}`;
+        }
+
+        function nextLightboxImage() {
+            if (currentAlbumImages.length === 0) return;
+            currentLightboxIndex = (currentLightboxIndex + 1) % currentAlbumImages.length;
+            updateLightbox();
+        }
+
+        function prevLightboxImage() {
+            if (currentAlbumImages.length === 0) return;
+            currentLightboxIndex = (currentLightboxIndex - 1 + currentAlbumImages.length) % currentAlbumImages.length;
+            updateLightbox();
+        }
+
+        // Keyboard navigation
+        function handleLightboxKeydown(e) {
+            if (e.key === 'ArrowRight') {
+                nextLightboxImage();
+            } else if (e.key === 'ArrowLeft') {
+                prevLightboxImage();
+            } else if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        }
+
+        // Initialize loading
+        loadData();
+    </script>
+</body>
+</html>

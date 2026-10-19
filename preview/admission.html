@@ -1,0 +1,1727 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อมูลการรับสมัครเรียน | English Program (EP) CPW</title>
+
+    
+    <meta name="robots" content="noindex, nofollow">
+    <div class="bg-amber-500 text-slate-950 font-bold text-xs py-2 px-4 text-center sticky top-0 z-50 flex items-center justify-center gap-2 shadow-md">
+        <span>🚧</span>
+        <span>โหมดปิดปรับปรุงกำลังเปิดใช้งาน (บุคคลภายนอกจะเห็นหน้าแจ้งปิดปรับปรุง ไม่สามารถดูข้อมูลหน้านี้ได้)</span>
+        <a href="admin.html" class="underline ml-2 bg-slate-950 text-white px-2.5 py-0.5 rounded-lg text-[11px] hover:bg-slate-800 transition">⚙️ ไปที่แผงควบคุมหลังบ้าน</a>
+    </div>
+    
+
+    <!-- CSRF Token สำหรับเรียกใช้ในการเซฟข้อมูล -->
+    <script>
+        window.csrfToken = "";
+        // ดักจับการเรียกใช้ fetch เพื่อส่ง CSRF Token ไปใน Header ของคำขอแบบ AJAX โดยอัตโนมัติ
+        (function() {
+            const originalFetch = window.fetch;
+            window.fetch = function(input, init) {
+                if (typeof input === 'string' && (input.includes('save_data.php') || input.includes('save_inline.php') || input.includes('auth_action.php'))) {
+                    init = init || {};
+                    init.headers = init.headers || {};
+                    init.headers['X-CSRF-Token'] = window.csrfToken;
+                }
+                return originalFetch(input, init);
+            };
+        })();
+    </script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Sarabun & Inter -->
+    <link rel="stylesheet" href="css/typography.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="js/main.js"></script>
+    <script src="js/editor.js" defer></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Sarabun', 'Inter', 'sans-serif'],
+                        english: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff', // Light Purple (Card backgrounds or button hover)
+                            100: '#ede9fe',
+                            500: '#1e3a8a', // School Navy Blue (Primary Blue)
+                            600: '#1e40af', // Mid Blue
+                            700: '#1d4ed8', // Royal Blue
+                            secondary: '#7c3aed', // EP Purple (Pink + Blue)
+                            accent: '#db2777', // School Pink (Highlight Pink)
+                            gold: '#db2777', // Replace gold highlight with School Pink
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --ease-out-craft: cubic-bezier(0.23, 1, 0.32, 1);
+            --ease-in-out-craft: cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        html { scroll-behavior: smooth; font-size: 17px; -webkit-text-size-adjust: 100%; }
+
+        /* Bilingual Typography & Word Breaking (Thai & English) */
+        body, p, span, div, td, th, li, a, label, dd, dt {
+            word-break: normal !important;
+            line-break: normal !important;
+            overflow-wrap: break-word !important;
+            text-wrap: pretty;
+        }
+
+        h1, h2, h3, h4, h5, h6, .text-balance, .hero-title {
+            text-wrap: balance !important;
+            word-break: normal !important;
+            line-break: normal !important;
+            hyphens: none !important;
+        }
+
+        .lang-en, [lang="en"], .font-english {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            word-break: normal !important;
+            overflow-wrap: break-word !important;
+            hyphens: manual;
+        }
+
+        .lang-th, [lang="th"], html[lang="th"] {
+            font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+            word-break: normal !important;
+            line-break: normal !important;
+            hyphens: none !important;
+        }
+
+        .medal-badge, .badge, th, .btn-print-sar, #yearTabsNav button, 
+        .view-switcher button, .whitespace-nowrap, .room-badge {
+            word-break: keep-all !important;
+            white-space: nowrap !important;
+        }
+
+        .thai-prefix, .name-prefix {
+            display: inline-block;
+            white-space: nowrap !important;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        .dark ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+        /* SISB-style Navigation Effects */
+        .nav-link-sisb {
+            position: relative;
+            transition: color 0.2s var(--ease-out-craft);
+        }
+        .nav-link-sisb::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #db2777; /* School Pink Accent */
+            transition: width 0.2s var(--ease-out-craft);
+        }
+        .nav-link-sisb:hover::after, .nav-link-sisb.active::after {
+            width: 100%;
+        }
+
+        /* SISB-style Card Hover effects */
+        .card-hover-sisb {
+            transition: all 0.3s var(--ease-out-craft);
+        }
+        .card-hover-sisb:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px -10px rgba(124, 58, 237, 0.15); /* Purple shadow */
+            border-color: rgba(219, 39, 119, 0.3); /* School Pink border */
+        }
+
+        /* Override Hero Slide transitions with custom ease-out and optimized timing */
+        .hero-slide {
+            transition: opacity 500ms var(--ease-out-craft) !important;
+        }
+    </style>
+
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+
+    
+    <!-- NAVIGATION BAR -->
+    <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 dark:bg-slate-950/90 dark:border-slate-800/80 transition-all duration-300">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo / Title -->
+                <div class="flex items-center gap-3.5 cursor-pointer group" onclick="window.location.href = 'index.html'">
+                    <img src="img/cpw_logo_en.png" alt="Chonprathanwittaya School" class="w-11 h-11 object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-300">
+                    <div class="space-y-0.5">
+                        <span class="font-black text-lg text-slate-900 dark:text-white tracking-wider block leading-none lang-th">โครงการฯ ภาคภาษาอังกฤษ</span>
+                        <span class="font-black text-lg text-slate-900 dark:text-white tracking-wider block leading-none lang-en hidden">English Program</span>
+                        <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400 block leading-none">
+                            <span class="lang-th">โรงเรียนชลประทานวิทยา</span>
+                            <span class="lang-en hidden">Chonprathanwittaya School</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Desktop Nav Links -->
+                <div class="hidden lg:flex items-center gap-4 xl:gap-8">
+                    <div class="flex items-center gap-3 xl:gap-5 2xl:gap-6 text-[13px] xl:text-sm whitespace-nowrap">
+                        <!-- Home -->
+                        <a href="index.html" class="nav-link-sisb text-sm transition-colors duration-200 hover:text-brand-accent font-semibold text-slate-600 dark:text-slate-300">
+                            <span class="lang-th">หน้าแรก</span>
+                            <span class="lang-en hidden">Home</span>
+                        </a>
+
+                        <!-- About Us Dropdown -->
+                        
+                        <div class="relative group py-2">
+                            <button class="flex items-center gap-1 nav-link-sisb text-sm transition-colors duration-200 hover:text-brand-accent  focus:outline-none">
+                                <span class="lang-th">เกี่ยวกับเรา</span>
+                                <span class="lang-en hidden">About Us</span>
+                                <svg class="w-3 h-3 transition-transform duration-200 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div class="absolute left-0 mt-2 w-52 rounded-xl bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800/80 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-2">
+                                <a href="about.html" class="block px-4 py-2 text-xs font-bold text-slate-700 hover:text-brand-500 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-900/50">
+                                    <span class="lang-th">ข้อมูลทั่วไปโครงการ EP</span>
+                                    <span class="lang-en hidden">Overview & Vision</span>
+                                </a>
+                                <a href="staff.html" class="block px-4 py-2 text-xs font-bold text-slate-700 hover:text-brand-500 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-900/50">
+                                    <span class="lang-th">คณะครูและบุคลากร</span>
+                                    <span class="lang-en hidden">Teachers & Staff</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Curriculum Dropdown -->
+                        
+                        <div class="relative group py-2">
+                            <button class="flex items-center gap-1 nav-link-sisb text-sm transition-colors duration-200 hover:text-brand-accent  focus:outline-none">
+                                <span class="lang-th">หลักสูตร</span>
+                                <span class="lang-en hidden">Curriculum</span>
+                                <svg class="w-3 h-3 transition-transform duration-200 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div class="absolute left-0 mt-2 w-64 rounded-xl bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800/80 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-2">
+                                <a href="curriculum.html#tab-primary" class="block px-4 py-2 text-xs font-bold text-slate-700 hover:text-brand-500 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-900/50">
+                                    <span class="lang-th">ระดับประถมศึกษา (ป.1 - ป.6)</span>
+                                    <span class="lang-en hidden">Primary School (P.1 - P.6)</span>
+                                </a>
+                                <a href="curriculum.html#tab-junior" class="block px-4 py-2 text-xs font-bold text-slate-700 hover:text-brand-500 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-900/50">
+                                    <span class="lang-th">ระดับมัธยมศึกษาตอนต้น (ม.1 - ม.3)</span>
+                                    <span class="lang-en hidden">Junior High (M.1 - M.3)</span>
+                                </a>
+                                <a href="curriculum.html#tab-senior" class="block px-4 py-2 text-xs font-bold text-slate-700 hover:text-brand-500 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-900/50">
+                                    <span class="lang-th">ระดับมัธยมศึกษาตอนปลาย (ม.4 - ม.6)</span>
+                                    <span class="lang-en hidden">Senior High (M.4 - M.6)</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Admissions Dropdown -->
+                        
+                        <div class="relative group py-2">
+                            <button class="flex items-center gap-1 nav-link-sisb text-sm transition-colors duration-200 hover:text-brand-accent  focus:outline-none">
+                                <span class="lang-th">รับสมัครเรียน</span>
+                                <span class="lang-en hidden">Admissions</span>
+                                <svg class="w-3 h-3 transition-transform duration-200 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div class="absolute left-0 mt-2 w-60 rounded-xl bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800/80 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-2">
+                                <a href="admission.html" class="block px-4 py-2 text-xs font-bold text-slate-700 hover:text-brand-500 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-900/50">
+                                    <span class="lang-th">เกณฑ์และขั้นตอนการสมัครเรียน</span>
+                                    <span class="lang-en hidden">Process & Requirements</span>
+                                </a>
+                                <a href="fees.html" class="block px-4 py-2 text-xs font-bold text-slate-700 hover:text-brand-500 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-900/50">
+                                    <span class="lang-th">อัตราค่าเล่าเรียน & ค่าธรรมเนียม</span>
+                                    <span class="lang-en hidden">Tuition & Fees Breakdown</span>
+                                </a>
+                                <a href="tour.html" class="block px-4 py-2 text-xs font-bold text-brand-500 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-slate-900/50">
+                                    <span class="lang-th">🏛️ นัดหมายเยี่ยมชมโครงการ (Campus Tour)</span>
+                                    <span class="lang-en hidden">🏛️ Book a Campus Tour</span>
+                                </a>
+                            </div>
+                        </div>
+
+                                                <!-- News & Achievements Dropdown -->
+                        <div class="relative group py-2">
+                            <button class="flex items-center gap-1 nav-link-sisb text-sm transition-colors duration-200 hover:text-brand-accent  focus:outline-none">
+                                <span class="lang-th">ผลงาน & ข่าวสาร</span>
+                                <span class="lang-en hidden">Achievements & News</span>
+                                <svg class="w-3 h-3 transition-transform duration-200 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div class="absolute left-0 mt-2 w-64 rounded-xl bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800/80 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-2">
+                                <a href="awards.html" class="block px-4 py-2 text-xs font-bold text-slate-700 hover:text-brand-500 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-900/50 ">
+                                    <span class="lang-th">🏆 ทำเนียบเกียรติยศ (Hall of Fame)</span>
+                                    <span class="lang-en hidden">🏆 EP Hall of Fame</span>
+                                </a>
+                                <a href="news.html" class="block px-4 py-2 text-xs font-bold text-slate-700 hover:text-brand-500 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-900/50 ">
+                                    <span class="lang-th">📰 ข่าวสาร & กิจกรรม</span>
+                                    <span class="lang-en hidden">📰 News & Activities</span>
+                                </a>
+                            </div>
+                        </div>
+
+<!-- Contact -->
+                        <a href="contact.html" class="nav-link-sisb text-sm transition-colors duration-200 hover:text-brand-accent font-semibold text-slate-600 dark:text-slate-300">
+                            <span class="lang-th">ติดต่อเรา</span>
+                            <span class="lang-en hidden">Contact Us</span>
+                        </a>
+                    </div>
+                    
+                    <div class="h-5 w-px bg-slate-200 dark:bg-slate-800"></div>
+
+                    <div class="flex items-center gap-4">
+                        <!-- Language Switcher -->
+                        <button onclick="toggleLanguage()" id="langSwitcherBtn" class="text-xs font-bold w-9 h-9 flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl transition-colors duration-200">EN</button>
+
+                        <!-- Login Container -->
+                        <div id="loginNavContainer"></div>
+                    </div>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="flex lg:hidden items-center gap-3">
+                    <button onclick="toggleLanguage()" id="langSwitcherBtn" class="text-xs font-bold w-9 h-9 flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl transition-colors duration-200">EN</button>
+                    <button onclick="toggleMobileMenu()" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900 transition-colors">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Links -->
+        <div id="mobileMenu" class="hidden lg:hidden bg-white/95 backdrop-blur-md dark:bg-slate-950/95 border-b border-slate-200 dark:border-slate-800 px-4 py-4 space-y-2">
+            <a href="index.html" class="block px-4 py-2.5 rounded-xl text-base transition font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900/50">
+                <span class="lang-th">หน้าแรก</span>
+                <span class="lang-en hidden">Home</span>
+            </a>
+            
+            <!-- About Us Group Mobile -->
+            <div class="space-y-1 pt-1">
+                <div class="px-4 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    <span class="lang-th">เกี่ยวกับเรา</span>
+                    <span class="lang-en hidden">About Us</span>
+                </div>
+                <a href="about.html" class="block pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-slate-650 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900/50 ">
+                    <span class="lang-th">ข้อมูลทั่วไปโครงการ EP</span>
+                    <span class="lang-en hidden">Overview & Vision</span>
+                </a>
+                <a href="staff.html" class="block pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-slate-655 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900/50 ">
+                    <span class="lang-th">คณะครูและบุคลากร</span>
+                    <span class="lang-en hidden">Teachers & Staff</span>
+                </a>
+            </div>
+
+            <!-- Curriculum Group Mobile -->
+            <div class="space-y-1 pt-1">
+                <div class="px-4 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    <span class="lang-th">หลักสูตร</span>
+                    <span class="lang-en hidden">Curriculum</span>
+                </div>
+                <a href="curriculum.html#tab-primary" onclick="toggleMobileMenu()" class="block pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-slate-650 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900/50">
+                    <span class="lang-th">ระดับประถมศึกษา (ป.1 - ป.6)</span>
+                    <span class="lang-en hidden">Primary School (P.1 - P.6)</span>
+                </a>
+                <a href="curriculum.html#tab-junior" onclick="toggleMobileMenu()" class="block pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-slate-650 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900/50">
+                    <span class="lang-th">ระดับมัธยมศึกษาตอนต้น (ม.1 - ม.3)</span>
+                    <span class="lang-en hidden">Junior High (M.1 - M.3)</span>
+                </a>
+                <a href="curriculum.html#tab-senior" onclick="toggleMobileMenu()" class="block pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-slate-650 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900/50">
+                    <span class="lang-th">ระดับมัธยมศึกษาตอนปลาย (ม.4 - ม.6)</span>
+                    <span class="lang-en hidden">Senior High (M.4 - M.6)</span>
+                </a>
+            </div>
+
+            <!-- Admissions Group Mobile -->
+            <div class="space-y-1 pt-1">
+                <div class="px-4 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    <span class="lang-th">การรับสมัคร</span>
+                    <span class="lang-en hidden">Admissions</span>
+                </div>
+                <a href="admission.html" class="block pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-slate-650 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900/50 text-brand-500 font-bold dark:text-blue-400">
+                    <span class="lang-th">เกณฑ์และขั้นตอนการสมัครเรียน</span>
+                    <span class="lang-en hidden">Process & Requirements</span>
+                </a>
+                <a href="fees.html" class="block pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-slate-650 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900/50 ">
+                    <span class="lang-th">อัตราค่าเล่าเรียน & ค่าธรรมเนียม</span>
+                    <span class="lang-en hidden">Tuition & Fees Breakdown</span>
+                </a>
+                <a href="tour.html" class="block pl-8 pr-4 py-2 rounded-xl text-sm font-bold text-brand-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-900/50 ">
+                    <span class="lang-th">🏛️ นัดหมายเยี่ยมชมโครงการ (Campus Tour)</span>
+                    <span class="lang-en hidden">🏛️ Book a Campus Tour</span>
+                </a>
+            </div>
+
+                        <!-- Achievements & News Mobile Group -->
+            <div class="space-y-1 pt-1">
+                <div class="px-4 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    <span class="lang-th">ผลงาน & ข่าวสาร</span>
+                    <span class="lang-en hidden">Achievements & News</span>
+                </div>
+                <a href="awards.html" onclick="toggleMobileMenu()" class="block pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-slate-650 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900/50 ">
+                    <span class="lang-th">🏆 ทำเนียบเกียรติยศ (Hall of Fame)</span>
+                    <span class="lang-en hidden">🏆 EP Hall of Fame</span>
+                </a>
+                <a href="news.html" onclick="toggleMobileMenu()" class="block pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-slate-650 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900/50 ">
+                    <span class="lang-th">📰 ข่าวสารและกิจกรรมประชาสัมพันธ์</span>
+                    <span class="lang-en hidden">📰 News & Activities</span>
+                </a>
+            </div>
+
+<!-- Contact -->
+            <a href="contact.html" class="block px-4 py-2.5 rounded-xl text-base transition font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900/50">
+                <span class="lang-th">ติดต่อเรา</span>
+                <span class="lang-en hidden">Contact Us</span>
+            </a>
+            
+            <div id="loginNavContainerMobile" class="pt-3 border-t border-slate-150 dark:border-slate-800"></div>
+        </div>
+    </nav>
+
+
+    <!-- HEADER BANNER -->
+    <header class="relative bg-slate-950 text-white py-24 px-4 overflow-hidden flex items-center justify-center bg-cover bg-center" style="background-image: url('https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114424_685193.jpg');">
+        <div class="absolute inset-0 bg-slate-950/75"></div>
+        <div class="relative max-w-4xl mx-auto text-center space-y-4">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-accent/10 border border-brand-accent/25 text-brand-accent text-xs font-bold font-english uppercase tracking-wider">
+                Admissions Open
+            </span>
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
+                <span class="lang-th">การรับสมัครนักเรียนใหม่</span>
+                <span class="lang-en hidden">Admissions & Enrollments</span>
+            </h1>
+            <p class="text-slate-300 text-sm sm:text-base font-normal max-w-2xl mx-auto leading-relaxed">
+                <span class="lang-th">ข้อมูลหลักเกณฑ์การรับสมัคร ขั้นตอน และกำหนดการประจำปีการศึกษา 2570 โครงการฯ ภาคภาษาอังกฤษ (EP)</span>
+                <span class="lang-en hidden">Admission guidelines, procedures, and official calendars for the academic year 2027.</span>
+            </p>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-16">
+        
+        <!-- CALL-TO-ACTION & SYSTEM PORTAL LINK -->
+        <section class="bg-gradient-to-br from-blue-900 via-indigo-950 to-slate-950 rounded-3xl p-6 sm:p-10 text-white shadow-xl border border-blue-500/20 relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-72 h-72 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+                
+                <div class="space-y-4 max-w-2xl">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="lang-th">ระบบรับสมัครออนไลน์เปิดให้บริการแล้ว</span>
+                        <span class="lang-en hidden">Online Admissions System is Now Active</span>
+                    </div>
+
+                    <h2 class="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+                        <span class="lang-th">สมัครเข้าเรียนโครงการฯ ภาคภาษาอังกฤษ (EP)</span>
+                        <span class="lang-en hidden">Apply Online for English Program (EP)</span>
+                    </h2>
+
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed font-light">
+                        <span class="lang-th">ผู้ปกครองสามารถกรอกข้อมูลสมัครเรียนผ่านระบบกลางของโรงเรียนชลประทานวิทยา พิมพ์ใบสมัคร และนำเอกสารหลักฐานตัวจริงมาแสดงในวันคัดเลือก/สัมภาษณ์</span>
+                        <span class="lang-en hidden">Parents may submit applications via the central registration portal of Chonprathanwittaya School, print out application forms, and present official credentials on interview day.</span>
+                    </p>
+
+                    <!-- CAUTION NOTICE: EP VS ECP -->
+                    <div class="p-4 bg-amber-500/10 border border-amber-400/30 rounded-2xl flex items-start gap-3">
+                        <span class="text-xl flex-shrink-0">⚠️</span>
+                        <div class="text-xs leading-relaxed text-amber-200">
+                            <strong class="font-bold text-amber-300 block mb-0.5">
+                                <span class="lang-th">ข้อสังเกตสำคัญในขั้นตอนเลือกหลักสูตร (ป้องกันความสับสน)</span>
+                                <span class="lang-en hidden">Important Advisory on Program Selection</span>
+                            </strong>
+                            <span class="lang-th">
+                                ในระบบรับสมัครออนไลน์ โปรดเลือกตัวเลือก <strong>"โครงการจัดการเรียนการสอนตามหลักสูตรกระทรวงศึกษาธิการเป็นภาษาอังกฤษ (English Program : EP)"</strong> 
+                                <br><span class="text-amber-300/80 font-normal">*(ข้อควรระวัง: โครงการ EP จัดการเรียนการสอนเป็นภาษาอังกฤษในวิชาหลัก แตกต่างจากหลักสูตรอื่นของโรงเรียน)*</span>
+                            </span>
+                            <span class="lang-en hidden">
+                                In the online portal, please specifically select <strong>"English Program (EP)"</strong>.
+                                <br><span class="text-amber-300/80 font-normal">*(Note: English Program conducts core subjects in English by native/foreign teachers, distinct from other curriculums)*</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button Cluster -->
+                <div class="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto flex-shrink-0">
+                    <a href="https://www.cpw.ac.th/admission/register/index.php" target="_blank" class="px-6 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-center font-bold text-sm sm:text-base shadow-lg shadow-blue-600/30 transition-all duration-200 flex items-center justify-center gap-2 group">
+                        <span>📝</span>
+                        <span class="lang-th">เข้าสู่ระบบรับสมัครออนไลน์</span>
+                        <span class="lang-en hidden">Open Online Registration Portal</span>
+                        <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </a>
+
+                    <a href="#details-primary" class="px-6 py-3.5 bg-white/10 hover:bg-white/15 border border-white/15 text-white rounded-2xl text-center font-medium text-xs sm:text-sm transition text-slate-200 flex items-center justify-center gap-1.5">
+                        <span>📋</span>
+                        <span class="lang-th">ดูเอกสารที่ต้องเตรียม &amp; กำหนดการ</span>
+                        <span class="lang-en hidden">Check Required Documents &amp; Dates</span>
+                    </a>
+                </div>
+
+            </div>
+        </section>
+        
+        <!-- INTRO & CALENDAR SELECTOR -->
+        <section class="space-y-12">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/10 text-brand-500 dark:text-blue-400 font-bold text-xs">
+                    <span class="lang-th">ปีการศึกษา 2570 (Academic Year 2027)</span>
+                    <span class="lang-en hidden">Academic Year 2027 (Admissions Open)</span>
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight">
+                    <span class="lang-th">เลือกระดับชั้นเพื่อดูขั้นตอนและเอกสารที่ต้องใช้</span>
+                    <span class="lang-en hidden">Select Level to View Procedures & Requirements</span>
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                    <span class="lang-th">*ข้อมูลกำหนดการรับสมัครนักเรียนใหม่ ประจำปีการศึกษา 2570 โครงการฯ ภาคภาษาอังกฤษ (EP)</span>
+                    <span class="lang-en hidden">*Official admission procedures and schedules for Academic Year 2027, English Program (EP)</span>
+                </p>
+            </div>
+
+            <!-- Grade Tabs Switcher Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Primary Card Button -->
+                <button onclick="selectLevel('primary')" id="card-primary" class="text-left w-full border-2 border-brand-500 ring-2 ring-brand-500/10 rounded-3xl p-6 sm:p-8 space-y-4 bg-white dark:bg-slate-900 flex flex-col justify-between hover:shadow transition-all duration-300 focus:outline-none">
+                    <div class="space-y-2 w-full">
+                        <span class="inline-block text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-950/30 px-2.5 py-0.5 rounded">Primary School</span>
+                        <h4 class="font-extrabold text-slate-900 dark:text-white text-lg">
+                            <span class="lang-th">ประถมศึกษาปีที่ 1 (ป.1)</span>
+                            <span class="lang-en hidden">Primary 1 (P.1)</span>
+                        </h4>
+                        <p class="text-xs text-slate-500">
+                            <span class="lang-th">รับสมัครนักเรียนชั้นอนุบาล 3 และภายนอกเพื่อขึ้นชั้นประถมศึกษา</span>
+                            <span class="lang-en hidden">Open for Kindergarten 3 graduates and external applicants.</span>
+                        </p>
+                        <span class="text-xs text-brand-500 dark:text-blue-400 font-bold block pt-2">
+                            <span class="lang-th">คลิกตรวจสอบกำหนดการ &rarr;</span>
+                            <span class="lang-en hidden">View Schedule & Criteria &rarr;</span>
+                        </span>
+                    </div>
+                </button>
+
+                <!-- Junior High Card Button -->
+                <button onclick="selectLevel('junior')" id="card-junior" class="text-left w-full border-2 border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4 bg-white dark:bg-slate-900 flex flex-col justify-between hover:shadow transition-all duration-300 focus:outline-none">
+                    <div class="space-y-2 w-full">
+                        <span class="inline-block text-[10px] font-bold uppercase tracking-wider text-brand-accent bg-brand-accent/10 px-2.5 py-0.5 rounded">Junior High</span>
+                        <h4 class="font-extrabold text-slate-900 dark:text-white text-lg">
+                            <span class="lang-th">มัธยมศึกษาปีที่ 1 (ม.1)</span>
+                            <span class="lang-en hidden">Junior High 1 (M.1)</span>
+                        </h4>
+                        <p class="text-xs text-slate-500">
+                            <span class="lang-th">รับสมัครจบชั้น ป.6 เกรดเฉลี่ยสะสมไม่ต่ำกว่า 3.50 สอบประเมินคณิตศาสตร์ &amp; อังกฤษ</span>
+                            <span class="lang-en hidden">P.6 graduates, GPA ≥ 3.50, examination in Math &amp; English.</span>
+                        </p>
+                        <span class="text-xs text-brand-accent font-bold block pt-2">
+                            <span class="lang-th">คลิกตรวจสอบกำหนดการ &rarr;</span>
+                            <span class="lang-en hidden">View Schedule & Criteria &rarr;</span>
+                        </span>
+                    </div>
+                </button>
+
+                <!-- Senior High Card Button -->
+                <button onclick="selectLevel('senior')" id="card-senior" class="text-left w-full border-2 border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4 bg-white dark:bg-slate-900 flex flex-col justify-between hover:shadow transition-all duration-300 focus:outline-none">
+                    <div class="space-y-2 w-full">
+                        <span class="inline-block text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-450 bg-emerald-100/50 dark:bg-emerald-950/30 px-2.5 py-0.5 rounded">Senior High</span>
+                        <h4 class="font-extrabold text-slate-900 dark:text-white text-lg">
+                            <span class="lang-th">มัธยมศึกษาปีที่ 4 (ม.4)</span>
+                            <span class="lang-en hidden">Senior High 4 (M.4)</span>
+                        </h4>
+                        <p class="text-xs text-slate-500">
+                            <span class="lang-th">รับสมัครจบชั้น ม.3 แผนวิทย์-คณิต และคณิต-อังกฤษ (จีน / ญี่ปุ่น)</span>
+                            <span class="lang-en hidden">M.3 graduates, Sci-Math &amp; Math-Eng tracks (Chinese/Japanese electives).</span>
+                        </p>
+                        <span class="text-xs text-emerald-600 dark:text-emerald-400 font-bold block pt-2">
+                            <span class="lang-th">คลิกตรวจสอบกำหนดการ &rarr;</span>
+                            <span class="lang-en hidden">View Schedule & Criteria &rarr;</span>
+                        </span>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- DETAILS WRAPPER -->
+        <section class="space-y-8">
+            <div id="details-primary" class="space-y-8">
+                <!-- G1 HEADER -->
+                <div class="border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <h3 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>🏫</span>
+                        <span class="lang-th">การรับสมัครชั้นประถมศึกษาปีที่ 1 (ป.1)</span>
+                        <span class="lang-en hidden">Primary 1 Admission (P.1)</span>
+                    </h3>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    <!-- Left: Admission calendars (7 Cols) -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <h4 class="text-sm font-extrabold text-brand-500 dark:text-blue-400 uppercase tracking-wider">
+                            <span class="lang-th">📅 ขั้นตอนและปฏิทินรับสมัคร</span>
+                            <span class="lang-en hidden">📅 Admissions Timeline & Procedures</span>
+                        </h4>
+                        
+                        <!-- Internal vs External subtabs display -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Internal Box -->
+                            <div class="p-5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-4">
+                                <span class="px-2.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-bold uppercase block w-max">
+                                    <span class="lang-th">นักเรียนเก่า ช.ป.ว. (อนุบาล 3)</span>
+                                    <span class="lang-en hidden">Current CPW Students (K.3)</span>
+                                </span>
+                                <ul class="space-y-3.5 text-xs text-slate-650 dark:text-slate-400">
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">ยื่นใบสมัครที่ครูประจำชั้น:</strong>
+                                            <strong class="lang-en hidden">Submit application to Homeroom:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">3 - 10 พฤศจิกายน 2568</span>
+                                                <span class="lang-en hidden">November 3 - 10, 2025</span>
+                                            </span><br>
+                                            <span class="text-[11px] text-slate-500">
+                                                <span class="lang-th">(ไม่มีค่าธรรมเนียมใบสมัครสำหรับนักเรียนเดิม)</span>
+                                                <span class="lang-en hidden">(No application fee for current CPW students)</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">การสัมภาษณ์นักเรียน/ผู้ปกครอง:</strong>
+                                            <strong class="lang-en hidden">Student & Parent Interview:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">17 - 21 พ.ย. 68 (รอบบ่าย 13.00 - 15.00 น.)</span>
+                                                <span class="lang-en hidden">Nov 17 - 21, 2025 (Afternoon 13:00 - 15:00)</span>
+                                            </span><br>
+                                            <span class="text-[11px] text-slate-500">
+                                                <span class="lang-th">อาคาร EP ชั้น 1 (แบ่งตามรอบประกาศรายชื่อ)</span>
+                                                <span class="lang-en hidden">EP Bldg. 1st Fl. (As per schedule announcement)</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">ประกาศผล &amp; ยืนยันสิทธิ์:</strong>
+                                            <strong class="lang-en hidden">Results Announcement &amp; Confirmation:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">ประกาศผล: 26 พ.ย. 68 (ออนไลน์)</span>
+                                                <span class="lang-en hidden">Results: Nov 26, 2025 (Online)</span>
+                                            </span><br>
+                                            <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                                <span class="lang-th">ยืนยันสิทธิ์รายงานตัวออนไลน์ (ไม่ต้องมาโรงเรียน)</span>
+                                                <span class="lang-en hidden">Confirm admission online (No on-site trip required)</span>
+                                            </span><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">ทำสัญญา &amp; มอบตัว: 13 ธันวาคม 2568</span>
+                                                <span class="lang-en hidden">Contract &amp; Enrollment: Dec 13, 2025</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- External Box -->
+                            <div class="p-5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-4">
+                                <span class="px-2.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-[10px] font-bold uppercase block w-max">
+                                    <span class="lang-th">นักเรียนภายนอกโรงเรียนอื่น</span>
+                                    <span class="lang-en hidden">External School Applicants</span>
+                                </span>
+                                <ul class="space-y-3.5 text-xs text-slate-650 dark:text-slate-400">
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">สมัครเรียนออนไลน์:</strong>
+                                            <strong class="lang-en hidden">Online Application:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">1 - 12 พฤศจิกายน 2568</span>
+                                                <span class="lang-en hidden">November 1 - 12, 2025</span>
+                                            </span><br>
+                                            <span class="text-[11px] text-slate-500">
+                                                <span class="lang-th">ผ่านระบบกลาง CPW Register (ค่าสมัคร 300 บาท)</span>
+                                                <span class="lang-en hidden">Via CPW Register portal (Fee: 300 THB)</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">การสัมภาษณ์ &amp; ตรวจเอกสารตัวจริง:</strong>
+                                            <strong class="lang-en hidden">Interview &amp; Document Verification:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">17 - 21 พ.ย. 68 (รอบเช้า 09.00 - 12.00 น.)</span>
+                                                <span class="lang-en hidden">Nov 17 - 21, 2025 (Morning 09:00 - 12:00)</span>
+                                            </span><br>
+                                            <span class="text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+                                                <span class="lang-th">รับบัตรคิว 08.30 น. (นำสูติบัตร-ทะเบียนบ้านตัวจริงมาตรวจวันเดียวจบ)</span>
+                                                <span class="lang-en hidden">Queue cards at 08:30 (Bring original certificates for one-stop verification)</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">ประกาศผล &amp; ยืนยันสิทธิ์:</strong>
+                                            <strong class="lang-en hidden">Results Announcement &amp; Confirmation:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">ประกาศผล: 26 พ.ย. 68 (ออนไลน์)</span>
+                                                <span class="lang-en hidden">Results: Nov 26, 2025 (Online)</span>
+                                            </span><br>
+                                            <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                                <span class="lang-th">ยืนยันสิทธิ์รายงานตัวออนไลน์ (ไม่ต้องมาโรงเรียน)</span>
+                                                <span class="lang-en hidden">Confirm admission online (No on-site trip required)</span>
+                                            </span><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">ทำสัญญา &amp; มอบตัว: 13 ธันวาคม 2568</span>
+                                                <span class="lang-en hidden">Contract &amp; Enrollment: Dec 13, 2025</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Stepper Details -->
+                        <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-5 bg-white dark:bg-slate-950 space-y-4">
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                                <span class="lang-th">📢 วิธีการประเมินเพื่อคัดเลือก (ป.1)</span>
+                                <span class="lang-en hidden">📢 Selection Assessment Process (P.1)</span>
+                            </span>
+                            <ol class="list-decimal list-inside space-y-2 text-xs text-slate-600 dark:text-slate-400 font-light leading-relaxed">
+                                <li>
+                                    <strong class="lang-th">ประเมินทักษะการสื่อสารเด็ก:</strong>
+                                    <strong class="lang-en hidden">Child Communication Skills:</strong>
+                                    <span class="lang-th">สัมภาษณ์ความพร้อมด้านพฤติกรรมและการสื่อสารพื้นฐานทั้ง ภาษาไทย และ ภาษาอังกฤษ</span>
+                                    <span class="lang-en hidden">Evaluate behavioral readiness and fundamental communication in both Thai and English.</span>
+                                </li>
+                                <li>
+                                    <strong class="lang-th">สัมภาษณ์ทัศนคติผู้ปกครอง:</strong>
+                                    <strong class="lang-en hidden">Parent Interview:</strong>
+                                    <span class="lang-th">คุยทำความเข้าใจเกี่ยวกับกระบวนการเรียนการสอน แนวทางของหลักสูตร English Program (EP) เพื่อส่งเสริมเด็กให้ตรงกัน</span>
+                                    <span class="lang-en hidden">Discussion regarding curriculum guidelines, English Program (EP) approach, and collaborative student support.</span>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Right: Requirements & documents checklist (5 Cols) -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <h4 class="text-sm font-extrabold text-brand-accent uppercase tracking-wider">
+                            <span class="lang-th">📋 คุณสมบัติและเอกสารสมัครเรียน</span>
+                            <span class="lang-en hidden">📋 Qualifications & Documents</span>
+                        </h4>
+                        
+                        <div class="p-6 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4">
+                            <div class="space-y-2 border-b border-slate-200 dark:border-slate-800 pb-4">
+                                <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                                    <span class="lang-th">คุณสมบัติผู้สมัคร:</span>
+                                    <span class="lang-en hidden">Applicant Qualifications:</span>
+                                </span>
+                                <ul class="list-disc list-inside text-xs text-slate-600 dark:text-slate-450 space-y-1 font-light">
+                                    <li>
+                                        <span class="lang-th">กำลังศึกษาชั้นอนุบาล 3 (หรืออนุบาล 2 รร.รัฐบาล)</span>
+                                        <span class="lang-en hidden">Currently studying in Kindergarten 3 (or K.2 government school)</span>
+                                    </li>
+                                    <li>
+                                        <span class="lang-th">อ่านออก เขียนได้ และมีความพร้อมพัฒนาการตามวัย</span>
+                                        <span class="lang-en hidden">Age-appropriate reading, writing, and developmental readiness</span>
+                                    </li>
+                                    <li>
+                                        <span class="lang-th">สุขภาพร่างกายแข็งแรง สามารถช่วยเหลือตัวเองได้ดี</span>
+                                        <span class="lang-en hidden">Good health and capable of self-care</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="space-y-2">
+                                <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                                    <span class="lang-th">เอกสารประกอบการสมัคร (เฉพาะนักเรียนภายนอก):</span>
+                                    <span class="lang-en hidden">Required Documents (External Applicants):</span>
+                                </span>
+                                <ul class="list-none text-xs text-slate-600 dark:text-slate-450 space-y-2.5 font-light">
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-500 font-bold">✓</span>
+                                        <span class="lang-th">ใบสมัครพร้อมรูปถ่ายหน้าตรงขนาด 1 นิ้ว จำนวน 3 รูป</span>
+                                        <span class="lang-en hidden">Application form with 3 passport-sized (1 inch) photos</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-500 font-bold">✓</span>
+                                        <span class="lang-th">สูติบัตรจริง พร้อมสำเนา 1 ฉบับ</span>
+                                        <span class="lang-en hidden">Original birth certificate with 1 copy</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-500 font-bold">✓</span>
+                                        <span class="lang-th">ทะเบียนบ้าน บิดา มารดา และผู้สมัคร พร้อมสำเนา 1 ฉบับ</span>
+                                        <span class="lang-en hidden">House registration copies of parents and applicant</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-500 font-bold">✓</span>
+                                        <span class="lang-th">ใบรับรองการศึกษาชั้นอนุบาล 3 จากโรงเรียนเดิม</span>
+                                        <span class="lang-en hidden">Kindergarten 3 graduation certificate from previous school</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="details-junior" class="space-y-8 hidden">
+                <!-- G7 HEADER -->
+                <div class="border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <h3 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>📘</span>
+                        <span class="lang-th">การรับสมัครชั้นมัธยมศึกษาปีที่ 1 (ม.1)</span>
+                        <span class="lang-en hidden">Junior High 1 Admission (M.1)</span>
+                    </h3>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    <!-- Left: Admission calendars (7 Cols) -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <h4 class="text-sm font-extrabold text-brand-accent uppercase tracking-wider">
+                            <span class="lang-th">📅 ขั้นตอนและปฏิทินรับสมัคร</span>
+                            <span class="lang-en hidden">📅 Admissions Timeline & Procedures</span>
+                        </h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Internal Box -->
+                            <div class="p-5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-4">
+                                <span class="px-2.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-bold uppercase block w-max">
+                                    <span class="lang-th">นักเรียนเก่า ช.ป.ว. (ขึ้น ม.1)</span>
+                                    <span class="lang-en hidden">Current CPW Students (to M.1)</span>
+                                </span>
+                                <ul class="space-y-3.5 text-xs text-slate-650 dark:text-slate-400">
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">สมัครกับครูประจำชั้น ป.6:</strong>
+                                            <strong class="lang-en hidden">Submit to P.6 Homeroom:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">12 - 28 มกราคม 2569</span>
+                                                <span class="lang-en hidden">January 12 - 28, 2026</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">สอบข้อเขียนคัดเลือก:</strong>
+                                            <strong class="lang-en hidden">Written Examination:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">เสาร์ที่ 7 กุมภาพันธ์ 2569</span>
+                                                <span class="lang-en hidden">Saturday, February 7, 2026</span>
+                                            </span><br>
+                                            <span class="text-[10px] text-slate-450">
+                                                <span class="lang-th">(คณิตศาสตร์ + อังกฤษ ณ อาคาร EP ชั้น 2)</span>
+                                                <span class="lang-en hidden">(Math + English at EP Bldg. 2nd Fl.)</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">ประกาศผล / มอบตัว:</strong>
+                                            <strong class="lang-en hidden">Results Announcement & Enrollment:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">ผล: 11 ก.พ. 69 | มอบตัว: 14 ก.พ. 69</span>
+                                                <span class="lang-en hidden">Results: Feb 11, 2026 | Enroll: Feb 14, 2026</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- External Box -->
+                            <div class="p-5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-4">
+                                <span class="px-2.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-[10px] font-bold uppercase block w-max">
+                                    <span class="lang-th">นักเรียนใหม่ต่างโรงเรียน</span>
+                                    <span class="lang-en hidden">External School Applicants</span>
+                                </span>
+                                <ul class="space-y-3.5 text-xs text-slate-650 dark:text-slate-400">
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">สมัครผ่านระบบออนไลน์:</strong>
+                                            <strong class="lang-en hidden">Online Application:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">12 - 30 มกราคม 2569</span>
+                                                <span class="lang-en hidden">January 12 - 30, 2026</span>
+                                            </span><br>
+                                            <span class="text-[10px] text-slate-500">
+                                                <span class="lang-th">(สแกนสมัครออนไลน์ / ไม่มีรับสมัครออนไซต์)</span>
+                                                <span class="lang-en hidden">(Online only / No on-site registration)</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">สอบคัดเลือกข้อเขียน:</strong>
+                                            <strong class="lang-en hidden">Written Examination:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">เสาร์ที่ 7 กุมภาพันธ์ 2569</span>
+                                                <span class="lang-en hidden">Saturday, February 7, 2026</span>
+                                            </span><br>
+                                            <span class="text-[10px] text-slate-450">
+                                                <span class="lang-th">(09.00 - 12.00 น. อาคาร EP ชั้น 2)</span>
+                                                <span class="lang-en hidden">(09:00 - 12:00 at EP Bldg. 2nd Fl.)</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">ประกาศผล / มอบตัว:</strong>
+                                            <strong class="lang-en hidden">Results Announcement & Enrollment:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">ผล: 11 ก.พ. 69 | มอบตัว: 14 ก.พ. 69</span>
+                                                <span class="lang-en hidden">Results: Feb 11, 2026 | Enroll: Feb 14, 2026</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Stepper Details -->
+                        <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-5 bg-white dark:bg-slate-950 space-y-3">
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                                <span class="lang-th">📝 รายละเอียดและสัดส่วนคะแนนสอบข้อเขียน (ม.1)</span>
+                                <span class="lang-en hidden">📝 Examination Details & Score Weighting (M.1)</span>
+                            </span>
+                            <ul class="list-disc list-inside space-y-1.5 text-xs text-slate-600 dark:text-slate-400 font-light">
+                                <li>
+                                    <strong class="lang-th">วิชาคณิตศาสตร์:</strong>
+                                    <strong class="lang-en hidden">Mathematics:</strong>
+                                    <span class="lang-th">50 คะแนน</span>
+                                    <span class="lang-en hidden">50 points</span>
+                                </li>
+                                <li>
+                                    <strong class="lang-th">วิชาภาษาอังกฤษ:</strong>
+                                    <strong class="lang-en hidden">English:</strong>
+                                    <span class="lang-th">100 คะแนน</span>
+                                    <span class="lang-en hidden">100 points</span>
+                                </li>
+                                <li>
+                                    <span class="lang-th"><strong>จำนวนรับนักเรียนใหม่ภายนอก:</strong> ประมาณ 30 คน (ค่าสมัครสอบ 300 บาท)</span>
+                                    <span class="lang-en hidden"><strong>External Admission Quota:</strong> Approx. 30 seats (Application fee: 300 THB)</span>
+                                </li>
+                                <li class="text-brand-accent">
+                                    <span class="lang-th"><strong>*สิทธิพิเศษเพิ่มเติม:</strong> ผู้สมัครที่มีผลคะแนนสอบวัดระดับภาษาอังกฤษ CEFR ตั้งแต่ระดับ A2 ขึ้นไป จะได้รับการพิจารณาเป็นกรณีพิเศษ</span>
+                                    <span class="lang-en hidden"><strong>*Special Consideration:</strong> Applicants with CEFR English proficiency test score of A2 or higher will receive special consideration.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Right: Requirements & documents checklist (5 Cols) -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <h4 class="text-sm font-extrabold text-brand-accent uppercase tracking-wider">
+                            <span class="lang-th">📋 คุณสมบัติและเอกสารสมัครเรียน</span>
+                            <span class="lang-en hidden">📋 Qualifications & Documents</span>
+                        </h4>
+                        
+                        <div class="p-6 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4">
+                            <div class="space-y-2 border-b border-slate-200 dark:border-slate-800 pb-4">
+                                <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                                    <span class="lang-th">คุณสมบัติผู้สมัคร (นักเรียนใหม่):</span>
+                                    <span class="lang-en hidden">Applicant Qualifications:</span>
+                                </span>
+                                <ul class="list-disc list-inside text-xs text-slate-600 dark:text-slate-450 space-y-1.5 font-light">
+                                    <li>
+                                        <span class="lang-th">กำลังศึกษาชั้น ป.6 รร.เอกชน หรือ รร.รัฐบาล</span>
+                                        <span class="lang-en hidden">Currently in P.6 from private or public schools</span>
+                                    </li>
+                                    <li>
+                                        <span class="lang-th">ผลการเรียนเฉลี่ยรวม ป.4 - ป.5 <span class="font-bold text-slate-900 dark:text-white">ไม่ต่ำกว่า 3.50</span></span>
+                                        <span class="lang-en hidden">Cumulative GPA in P.4 - P.5 <span class="font-bold text-slate-900 dark:text-white">≥ 3.50</span></span>
+                                    </li>
+                                    <li>
+                                        <span class="lang-th">ผลเกรดวิชาภาษาอังกฤษ ป.4 - ป.5 <span class="font-bold text-slate-900 dark:text-white">ไม่ต่ำกว่า 3.00</span></span>
+                                        <span class="lang-en hidden">English subject grade in P.4 - P.5 <span class="font-bold text-slate-900 dark:text-white">≥ 3.00</span></span>
+                                    </li>
+                                    <li>
+                                        <span class="lang-th">ความประพฤติเรียบร้อย สุขภาพแข็งแรง</span>
+                                        <span class="lang-en hidden">Good conduct and healthy</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="space-y-2">
+                                <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                                    <span class="lang-th">เอกสารอัปโหลดสมัครสอบออนไลน์:</span>
+                                    <span class="lang-en hidden">Online Upload Documents:</span>
+                                </span>
+                                <ul class="list-none text-xs text-slate-600 dark:text-slate-450 space-y-2.5 font-light">
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-500 font-bold">✓</span>
+                                        <span class="lang-th">รูปถ่าย 1 นิ้ว (ไฟล์ Upload File.JPG ถ่ายไม่เกิน 6 เดือน)</span>
+                                        <span class="lang-en hidden">1-inch photo (JPG file taken within 6 months)</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-500 font-bold">✓</span>
+                                        <span class="lang-th">สมุดประจำตัว ป.4 - ป.5 (ไฟล์ PDF/JPG) พร้อมสำเนารับรอง</span>
+                                        <span class="lang-en hidden">P.4 - P.5 report book (PDF/JPG certified copy)</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-500 font-bold">✓</span>
+                                        <span class="lang-th">ใบรับรองความประพฤติจากโรงเรียนเดิม</span>
+                                        <span class="lang-en hidden">Conduct certificate from previous school</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-500 font-bold">✓</span>
+                                        <span class="lang-th">ผลสอบ CEFR (ถ้ามี)</span>
+                                        <span class="lang-en hidden">CEFR test result (if available)</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="details-senior" class="space-y-8 hidden">
+                <!-- G10 HEADER -->
+                <div class="border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <h3 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>📕</span>
+                        <span class="lang-th">การรับสมัครชั้นมัธยมศึกษาปีที่ 4 (ม.4)</span>
+                        <span class="lang-en hidden">Senior High 4 Admission (M.4)</span>
+                    </h3>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    <!-- Left: Admission calendars (7 Cols) -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <h4 class="text-sm font-extrabold text-emerald-600 dark:text-emerald-450 uppercase tracking-wider">
+                            <span class="lang-th">📅 ขั้นตอนและปฏิทินรับสมัคร</span>
+                            <span class="lang-en hidden">📅 Admissions Timeline & Procedures</span>
+                        </h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Internal Box -->
+                            <div class="p-5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-4">
+                                <span class="px-2.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-bold uppercase block w-max">
+                                    <span class="lang-th">นักเรียนเก่า ช.ป.ว. (ขึ้น ม.4)</span>
+                                    <span class="lang-en hidden">Current CPW Students (to M.4)</span>
+                                </span>
+                                <ul class="space-y-3.5 text-xs text-slate-650 dark:text-slate-400">
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">ยื่นใบสมัครที่ครูประจำชั้น ม.3:</strong>
+                                            <strong class="lang-en hidden">Submit to M.3 Homeroom:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">12 - 28 มกราคม 2569</span>
+                                                <span class="lang-en hidden">January 12 - 28, 2026</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">สอบข้อเขียนคัดเลือกหลักสูตร:</strong>
+                                            <strong class="lang-en hidden">Written Examination:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">เสาร์ที่ 7 กุมภาพันธ์ 2569</span>
+                                                <span class="lang-en hidden">Saturday, February 7, 2026</span>
+                                            </span><br>
+                                            <span class="text-[10px] text-slate-450">
+                                                <span class="lang-th">(คณิต + วิทย์ + อังกฤษ ณ อาคาร EP ชั้น 2)</span>
+                                                <span class="lang-en hidden">(Math + Sci + English at EP Bldg. 2nd Fl.)</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">ประกาศผล / มอบตัว:</strong>
+                                            <strong class="lang-en hidden">Results Announcement & Enrollment:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">ผล: 11 ก.พ. 69 | มอบตัว: 14 ก.พ. 69</span>
+                                                <span class="lang-en hidden">Results: Feb 11, 2026 | Enroll: Feb 14, 2026</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- External Box -->
+                            <div class="p-5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-4">
+                                <span class="px-2.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-[10px] font-bold uppercase block w-max">
+                                    <span class="lang-th">นักเรียนใหม่ต่างโรงเรียน</span>
+                                    <span class="lang-en hidden">External School Applicants</span>
+                                </span>
+                                <ul class="space-y-3.5 text-xs text-slate-650 dark:text-slate-400">
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">สมัครผ่านระบบออนไลน์:</strong>
+                                            <strong class="lang-en hidden">Online Application:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">12 - 30 มกราคม 2569</span>
+                                                <span class="lang-en hidden">January 12 - 30, 2026</span>
+                                            </span><br>
+                                            <span class="text-[10px] text-slate-500">
+                                                <span class="lang-th">(ผ่านระบบรับสมัคร/ไม่มีรับแบบออนไซต์)</span>
+                                                <span class="lang-en hidden">(Online only / No on-site registration)</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">สอบคัดเลือกข้อเขียน:</strong>
+                                            <strong class="lang-en hidden">Written Examination:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">เสาร์ที่ 7 กุมภาพันธ์ 2569</span>
+                                                <span class="lang-en hidden">Saturday, February 7, 2026</span>
+                                            </span><br>
+                                            <span class="text-[10px] text-slate-450">
+                                                <span class="lang-th">(09.00 - 12.00 น. อาคาร EP ชั้น 2)</span>
+                                                <span class="lang-en hidden">(09:00 - 12:00 at EP Bldg. 2nd Fl.)</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
+                                        <div>
+                                            <strong class="lang-th">ประกาศผล / มอบตัว:</strong>
+                                            <strong class="lang-en hidden">Results Announcement & Enrollment:</strong><br>
+                                            <span class="text-slate-900 dark:text-white font-bold">
+                                                <span class="lang-th">ผล: 11 ก.พ. 69 | มอบตัว: 14 ก.พ. 69</span>
+                                                <span class="lang-en hidden">Results: Feb 11, 2026 | Enroll: Feb 14, 2026</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Stepper Details -->
+                        <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-5 bg-white dark:bg-slate-950 space-y-4">
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                                <span class="lang-th">📝 สายการเรียนและจำนวนการเปิดรับสมัคร (ม.4)</span>
+                                <span class="lang-en hidden">📝 Academic Tracks & Available Seats (M.4)</span>
+                            </span>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-1">
+                                    <strong class="lang-th">🧪 วิทยาศาสตร์ - คณิตศาสตร์</strong>
+                                    <strong class="lang-en hidden">🧪 Science - Mathematics Track</strong>
+                                    <p class="text-[11px] text-slate-500">
+                                        <span class="lang-th">รับจำนวนจำกัดประมาณ <strong>30 คน</strong></span>
+                                        <span class="lang-en hidden">Limited quota approx. <strong>30 seats</strong></span>
+                                    </p>
+                                </div>
+                                <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-1">
+                                    <strong class="lang-th">💼 คณิตศาสตร์ - ภาษาอังกฤษ</strong>
+                                    <strong class="lang-en hidden">💼 Mathematics - English Track</strong>
+                                    <p class="text-[11px] text-slate-500">
+                                        <span class="lang-th">ศิลป์คำนวณ (เพิ่มเติม จีน / ญี่ปุ่น) รับประมาณ <strong>20 คน</strong></span>
+                                        <span class="lang-en hidden">Arts-Math (Chinese / Japanese electives) approx. <strong>20 seats</strong></span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="text-[11px] text-slate-550 dark:text-slate-450 leading-relaxed space-y-1 pt-1">
+                                <p>
+                                    <span class="lang-th">• <strong>สัดส่วนคะแนนสอบ:</strong> คณิตศาสตร์ 50 คะแนน | วิทยาศาสตร์ 50 คะแนน | อังกฤษ 100 คะแนน</span>
+                                    <span class="lang-en hidden">• <strong>Exam Score Weight:</strong> Mathematics 50 pts | Science 50 pts | English 100 pts</span>
+                                </p>
+                                <p class="text-emerald-600 dark:text-emerald-450 font-bold">
+                                    <span class="lang-th">• ผู้สมัครมีผล CEFR ตั้งแต่ระดับ B1 ขึ้นไปจะได้รับการพิจารณาเป็นกรณีพิเศษ</span>
+                                    <span class="lang-en hidden">• Applicants with CEFR test score of B1 or higher will receive special consideration.</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Requirements & documents checklist (5 Cols) -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <h4 class="text-sm font-extrabold text-emerald-600 dark:text-emerald-450 uppercase tracking-wider">
+                            <span class="lang-th">📋 คุณสมบัติและเอกสารสมัครเรียน</span>
+                            <span class="lang-en hidden">📋 Qualifications & Documents</span>
+                        </h4>
+                        
+                        <div class="p-6 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4">
+                            <div class="space-y-2 border-b border-slate-200 dark:border-slate-800 pb-4">
+                                <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                                    <span class="lang-th">คุณสมบัติผู้สมัคร (นักเรียนใหม่):</span>
+                                    <span class="lang-en hidden">Applicant Qualifications:</span>
+                                </span>
+                                <ul class="list-disc list-inside text-xs text-slate-650 dark:text-slate-450 space-y-1.5 font-light">
+                                    <li>
+                                        <span class="lang-th">กำลังเรียนหรือจบชั้น ม.3 (หรือเทียบเท่า)</span>
+                                        <span class="lang-en hidden">Currently studying in or graduated from M.3 (or equivalent)</span>
+                                    </li>
+                                    <li>
+                                        <span class="lang-th">เกรดเฉลี่ยสะสม 5 ภาคเรียน <span class="font-bold text-slate-900 dark:text-white">ไม่ต่ำกว่า 3.00</span></span>
+                                        <span class="lang-en hidden">5-semester cumulative GPA <span class="font-bold text-slate-900 dark:text-white">≥ 3.00</span></span>
+                                    </li>
+                                    <li>
+                                        <span class="lang-th">เกรดเฉลี่ยวิชาคณิต, วิทย์, อังกฤษ <span class="font-bold text-slate-900 dark:text-white">ไม่ต่ำกว่า 3.00</span> (หรือร้อยละ 70)</span>
+                                        <span class="lang-en hidden">GPA in Math, Science, English <span class="font-bold text-slate-900 dark:text-white">≥ 3.00</span> (or 70%)</span>
+                                    </li>
+                                    <li>
+                                        <span class="lang-th">ประพฤติดี สุขภาพแข็งแรง</span>
+                                        <span class="lang-en hidden">Good conduct and healthy</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="space-y-2">
+                                <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                                    <span class="lang-th">เอกสารอัปโหลดสมัครสอบออนไลน์:</span>
+                                    <span class="lang-en hidden">Online Upload Documents:</span>
+                                </span>
+                                <ul class="list-none text-xs text-slate-650 dark:text-slate-450 space-y-2.5 font-light">
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-500 font-bold">✓</span>
+                                        <span class="lang-th">รูปถ่าย 1 นิ้ว (ไฟล์ Upload File.JPG ถ่ายไม่เกิน 6 เดือน)</span>
+                                        <span class="lang-en hidden">1-inch photo (JPG file taken within 6 months)</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-500 font-bold">✓</span>
+                                        <span class="lang-th">ใบแสดงผลเกรดเฉลี่ย 5 ภาคเรียน ปพ.1 (ไฟล์ PDF/JPG)</span>
+                                        <span class="lang-en hidden">5-semester official transcript (Por Phor 1, PDF/JPG)</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-500 font-bold">✓</span>
+                                        <span class="lang-th">ใบรับรองพฤติกรรมจากสถาบันเดิม</span>
+                                        <span class="lang-en hidden">Conduct certificate from previous school</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-500 font-bold">✓</span>
+                                        <span class="lang-th">ผลสอบวัดระดับภาษาอังกฤษ CEFR (ถ้ามี)</span>
+                                        <span class="lang-en hidden">CEFR English test result (if available)</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA & Contact channels -->
+        <section class="space-y-8 pt-8 border-t border-slate-200 dark:border-slate-800">
+            <div class="bg-gradient-to-br from-brand-500 to-brand-600 dark:from-slate-850 dark:to-slate-950 text-white rounded-3xl p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl relative overflow-hidden">
+                <div class="space-y-4 max-w-xl relative z-10">
+                    <h3 class="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+                        <span class="lang-th">พร้อมสมัครเข้าศึกษาหรือยัง?</span>
+                        <span class="lang-en hidden">Ready to Join Our Family?</span>
+                    </h3>
+                    <p class="text-slate-100 text-xs sm:text-sm font-light leading-relaxed">
+                        <span class="lang-th">สมัครลงทะเบียนสอบคัดเลือกเข้าโครงการภาคภาษาอังกฤษ (EP) ได้ทางช่องทางออนไลน์หลักของโรงเรียนชลประทานวิทยา</span>
+                        <span class="lang-en hidden">Apply for the official selection test to join our English Program today through our online portal.</span>
+                    </p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4 relative z-10 w-full md:w-auto">
+                    <a href="https://www.cpw.ac.th/admission/register" target="_blank" class="px-8 py-4 bg-white text-brand-600 hover:bg-slate-100 rounded-xl text-sm font-black transition-all shadow-md text-center">
+                        <span class="lang-th">👉 สมัครออนไลน์ได้ที่นี่</span>
+                        <span class="lang-en hidden">👉 Apply Online Here</span>
+                    </a>
+                    <a href="contact.html" class="px-8 py-4 bg-brand-700/40 hover:bg-brand-700/60 border border-white/20 rounded-xl text-sm font-bold transition text-center">
+                        <span class="lang-th">สอบถามข้อมูลเพิ่มเติม</span>
+                        <span class="lang-en hidden">Contact Registrar</span>
+                    </a>
+                </div>
+                <!-- Background decoration element -->
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/5 rounded-full blur-2xl"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-500 dark:text-slate-400 p-2">
+                <p>
+                    <span class="lang-th">• <strong>คำแนะนำ:</strong> เอกสารอัปโหลดและรูปถ่ายทุกรายการต้องรับรองสำเนาถูกต้องให้ครบถ้วนในรูปแบบดิจิทัล (JPG/PDF) ขนาดไฟล์ต้องไม่เกินที่ระบบกำหนด</span>
+                    <span class="lang-en hidden">• <strong>Instructions:</strong> All uploaded documents and photos must be properly certified digital copies (JPG/PDF) not exceeding system file size limits.</span>
+                </p>
+                <p>
+                    <span class="lang-th">• <strong>ช่องทางโทรศัพท์:</strong> ติดต่อฝ่ายทะเบียนโครงการ EP ได้ที่ <strong>02-583-4047 ต่อ 118</strong> หรือ <strong>02-583-4854</strong> ในวันและเวลาราชการ (จันทร์ - ศุกร์ 08.30 - 16.00 น.)</span>
+                    <span class="lang-en hidden">• <strong>Phone:</strong> Contact EP Registrar at <strong>02-583-4047 ext. 118</strong> or <strong>02-583-4854</strong> during official hours (Mon - Fri 08:30 - 16:00).</span>
+                </p>
+            </div>
+        </section>
+    </main>
+
+        <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-900 text-slate-400 pt-16 pb-8 mt-auto">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Grid Top section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-12 border-b border-slate-900">
+                <!-- Column 1: Info & Contact -->
+                <div class="space-y-5">
+                    <div class="flex items-center gap-2">
+                        <img src="img/cpw_logo_en.png" alt="Chonprathanwittaya School" class="w-9 h-9 object-contain drop-shadow-sm">
+                        <span class="font-black text-base text-slate-100 font-english uppercase tracking-wider">English Program</span>
+                    </div>
+                    <p class="text-xs text-slate-500 leading-relaxed font-light">
+                        <span class="lang-th">โครงการจัดการเรียนการสอนตามหลักสูตรกระทรวงศึกษาธิการเป็นภาษาอังกฤษ โรงเรียนชลประทานวิทยา มุ่งส่งเสริมความเป็นเลิศทางวิชาการและทักษะภาษาอังกฤษเพื่อเตรียมความพร้อมสู่สากล</span>
+                        <span class="lang-en hidden">The English Program at Chonprathan Wittaya School aims to promote academic excellence and English skills to prepare students for the global stage.</span>
+                    </p>
+                    <div class="text-xs text-slate-500 space-y-2.5 pt-2">
+                        <p class="flex items-start gap-2">
+                            <span class="text-brand-accent">📍</span>
+                            <span>201 หมู่ 1 ถ.ติวานนท์ ต.บางตลาด อ.ปากเกร็ด จ.นนทบุรี 11120</span>
+                        </p>
+                        <p class="flex items-center gap-2">
+                            <span class="text-brand-accent">📞</span>
+                            <span>02-583-5444</span>
+                        </p>
+                        <p class="flex items-center gap-2">
+                            <span class="text-brand-accent">✉️</span>
+                            <span>englishprogram@cpw.ac.th</span>
+                        </p>
+                        <p class="flex items-center gap-2">
+                            <span class="text-brand-accent">🌐</span>
+                            <a href="https://www.facebook.com/profile.php?id=100093686707861" target="_blank" class="hover:text-brand-accent text-slate-400 font-semibold transition">Facebook: English Program CPW</a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Column 2: Quick Links -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-slate-200 text-sm tracking-wider uppercase border-l-4 border-brand-accent pl-2.5">
+                        <span class="lang-th">ลิงก์แนะนำ</span>
+                        <span class="lang-en hidden">Quick Links</span>
+                    </h4>
+                    <ul class="text-xs space-y-2.5 font-medium">
+                        <li>
+                            <a href="index.html" class="hover:text-brand-accent transition-colors duration-200">
+                                <span class="lang-th">หน้าแรก</span>
+                                <span class="lang-en hidden">Home</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="about.html" class="hover:text-brand-accent transition-colors duration-200">
+                                <span class="lang-th">ข้อมูลทั่วไป & ประวัติ</span>
+                                <span class="lang-en hidden">About & History</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="curriculum.html" class="hover:text-brand-accent transition-colors duration-200">
+                                <span class="lang-th">หลักสูตรเด่น</span>
+                                <span class="lang-en hidden">Academic Programs</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="staff.html" class="hover:text-brand-accent transition-colors duration-200">
+                                <span class="lang-th">บุคลากรและคณะครู</span>
+                                <span class="lang-en hidden">Faculty & Staff</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="contact.html" class="hover:text-brand-accent transition-colors duration-200">
+                                <span class="lang-th">ติดต่อเรา</span>
+                                <span class="lang-en hidden">Contact Us</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Column 3: Academic levels -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-slate-200 text-sm tracking-wider uppercase border-l-4 border-brand-accent pl-2.5">
+                        <span class="lang-th">ระดับชั้นเรียน (EP)</span>
+                        <span class="lang-en hidden">Academic Levels</span>
+                    </h4>
+                    <ul class="text-xs space-y-2.5 font-medium">
+                        <li>
+                            <a href="curriculum.html#primary" class="hover:text-brand-accent transition-colors duration-200">
+                                <span class="lang-th">ระดับประถมศึกษา (ป.1 - ป.6)</span>
+                                <span class="lang-en hidden">Primary School (P.1 - P.6)</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="curriculum.html#junior" class="hover:text-brand-accent transition-colors duration-200">
+                                <span class="lang-th">ระดับมัธยมศึกษาตอนต้น (ม.1 - ม.3)</span>
+                                <span class="lang-en hidden">Junior High School (M.1 - M.3)</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="curriculum.html#senior" class="hover:text-brand-accent transition-colors duration-200">
+                                <span class="lang-th">ระดับมัธยมศึกษาตอนปลาย (ม.4 - ม.6)</span>
+                                <span class="lang-en hidden">Senior High School (M.4 - M.6)</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="fees.html" class="hover:text-brand-accent transition-colors duration-200">
+                                <span class="lang-th">ค่าธรรมเนียมการศึกษา</span>
+                                <span class="lang-en hidden">Tuition & Fees</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Column 4: Resources -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-slate-200 text-sm tracking-wider uppercase border-l-4 border-brand-accent pl-2.5">
+                        <span class="lang-th">ระบบสารสนเทศโรงเรียน</span>
+                        <span class="lang-en hidden">School Portals</span>
+                    </h4>
+                    <ul class="text-xs space-y-2.5 font-medium">
+                        <li>
+                            <a href="https://app.cpw.ac.th/cpw_register/login.html" target="_blank" class="hover:text-brand-accent transition-colors duration-200 flex items-center gap-1.5">
+                                <span>🎓</span>
+                                <span class="lang-th">ระบบทะเบียนนักเรียน (CPW Register)</span>
+                                <span class="lang-en hidden">Student Register Portal</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://center.cpw.ac.th/cpw_personal/login.php" target="_blank" class="hover:text-brand-accent transition-colors duration-200 flex items-center gap-1.5">
+                                <span>👨‍🏫</span>
+                                <span class="lang-th">ระบบบุคลากร (CPW Personal)</span>
+                                <span class="lang-en hidden">Staff Information System</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="index.html#announcements" class="hover:text-brand-accent transition-colors duration-200 flex items-center gap-1.5">
+                                <span>📰</span>
+                                <span class="lang-th">ข่าวประกาศประชาสัมพันธ์</span>
+                                <span class="lang-en hidden">Latest News & Announcements</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="contact.html#map" class="hover:text-brand-accent transition-colors duration-200 flex items-center gap-1.5">
+                                <span>🗺️</span>
+                                <span class="lang-th">แผนที่การเดินทาง</span>
+                                <span class="lang-en hidden">Travel Map & Location</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright Bar -->
+            <div class="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-slate-600 gap-4">
+                <p>
+                    © 2026 English Program, Chonprathan Wittaya School. All rights reserved.
+                </p>
+                <p class="flex items-center gap-4">
+                    <span>
+                        <span class="lang-th">เทคโนโลยี: HTML, CSS, JavaScript, PHP</span>
+                        <span class="lang-en hidden">Built with HTML, CSS, JS, PHP</span>
+                    </span>
+                    <span>•</span>
+                    <a href="https://www.cpw.ac.th" target="_blank" class="hover:text-slate-400 transition-colors">www.cpw.ac.th</a>
+                    <span>•</span>
+                    <a href="admin.html" title="ระบบจัดการข้อมูลสำหรับผู้ดูแลระบบ (Admin)" class="hover:text-slate-400 opacity-60 hover:opacity-100 transition-opacity inline-flex items-center gap-1">
+                        <span>🔒</span>
+                        <span class="lang-th">ระบบเจ้าหน้าที่</span>
+                        <span class="lang-en hidden">Staff Portal</span>
+                    </a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- N°31 Chat Layout floating widget -->
+    <div id="ep-chat-widget" class="fixed bottom-6 right-6 z-50">
+        <!-- Floating Action Button -->
+        <button onclick="toggleChatWindow()" class="w-14 h-14 bg-brand-accent hover:bg-brand-accent/90 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all duration-300">
+            <!-- Chat Icon -->
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+        </button>
+
+        <!-- Chat Popup Window -->
+        <div id="ep-chat-window" class="hidden absolute bottom-20 right-0 w-[340px] sm:w-[380px] h-[480px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300">
+            <!-- Header -->
+            <div class="px-4 py-3.5 bg-brand-500 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                    <div>
+                        <h4 class="font-extrabold text-sm leading-tight font-english">EP Support Assistant</h4>
+                        <span class="text-[10px] text-blue-100 font-light"><span class="lang-th">ตอบกลับทันที</span><span class="lang-en hidden">Instant Reply</span></span>
+                    </div>
+                </div>
+                <button onclick="toggleChatWindow()" class="text-white hover:text-slate-200 text-xl font-bold font-sans">&times;</button>
+            </div>
+
+            <!-- Chat Messages Container -->
+            <div id="ep-chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-slate-50 dark:bg-slate-950 text-xs text-slate-800 dark:text-slate-200">
+                <!-- Greeting -->
+                <div class="flex items-start gap-2">
+                    <div class="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">EP</div>
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl rounded-tl-none p-3 shadow-sm max-w-[85%] leading-relaxed">
+                        <p class="lang-th">สวัสดีครับ! ยินดีต้อนรับสู่ฝ่ายประชาสัมพันธ์หลักสูตรภาษาอังกฤษ (EP) โรงเรียนชลประทานวิทยา คุณมีคำถามส่วนใดให้ผมช่วยให้ข้อมูลเบื้องต้นไหมครับ?</p>
+                        <p class="lang-en hidden">Hello! Welcome to the English Program (EP) information service at Chonprathanwittaya School. How can I assist you today?</p>
+                        
+                        <div class="mt-3 flex flex-col gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <button onclick="askPresetQuestion('admissions')" class="w-full text-left px-2.5 py-1.5 bg-slate-100 hover:bg-brand-500 hover:text-white rounded-lg transition-all duration-200 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-brand-500">
+                                📋 <span class="lang-th">ข้อมูลการรับสมัครเรียน</span><span class="lang-en hidden">Admissions Info</span>
+                            </button>
+                            <button onclick="askPresetQuestion('fees')" class="w-full text-left px-2.5 py-1.5 bg-slate-100 hover:bg-brand-500 hover:text-white rounded-lg transition-all duration-200 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-brand-500">
+                                💰 <span class="lang-th">ค่าเทอมและค่าธรรมเนียม</span><span class="lang-en hidden">Tuition & Fees</span>
+                            </button>
+                            <button onclick="askPresetQuestion('curriculum')" class="w-full text-left px-2.5 py-1.5 bg-slate-100 hover:bg-brand-500 hover:text-white rounded-lg transition-all duration-200 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-brand-500">
+                                🏫 <span class="lang-th">หลักสูตรและวิชาเรียน</span><span class="lang-en hidden">Curriculum & Subjects</span>
+                            </button>
+                            <button onclick="askPresetQuestion('contact')" class="w-full text-left px-2.5 py-1.5 bg-slate-100 hover:bg-brand-500 hover:text-white rounded-lg transition-all duration-200 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-brand-500">
+                                📞 <span class="lang-th">ติดต่อสำนักงาน EP</span><span class="lang-en hidden">Contact EP Office</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Footer Input -->
+            <div class="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex gap-2">
+                <input type="text" id="ep-chat-input" onkeydown="handleChatSubmit(event)" placeholder="พิมพ์คำถามของคุณ..." class="flex-grow px-3 py-2 bg-slate-50 border border-slate-200 dark:bg-slate-950 dark:border-slate-800 dark:text-white rounded-xl focus:outline-none focus:border-brand-500 text-xs" />
+                <button onclick="sendChatMessage()" class="px-3.5 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-bold transition text-xs">
+                    <span class="lang-th">ส่ง</span><span class="lang-en hidden">Send</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Helper JavaScript -->
+    <script>
+        function toggleChatWindow() {
+            const chatWindow = document.getElementById('ep-chat-window');
+            if (chatWindow) {
+                chatWindow.classList.toggle('hidden');
+                // Scroll to bottom of messages container
+                const messagesContainer = document.getElementById('ep-chat-messages');
+                if (messagesContainer) {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            }
+        }
+
+        function handleChatSubmit(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        const PRESET_RESPONSES = {
+            admissions: {
+                th: "📋 **ข้อมูลการรับสมัครเรียน (EP)**:\nโรงเรียนเปิดรับสมัครระดับ ป.1, ม.1 และ ม.4 ในช่วงกุมภาพันธ์ - มีนาคม ของทุกปี โดยมีการทดสอบสัมภาษณ์ภาษาอังกฤษและทักษะวิชาการหลัก สามารถดูประกาศและดาวน์โหลดใบสมัครได้ที่หน้าแรกของเว็บ หรือสอบถามผ่านแผนกทะเบียน โทร. 02-583-5444",
+                en: "📋 **Admissions Info (EP)**:\nWe accept new student applications for G.1, G.7 (M.1), and G.10 (M.4) around February-March annually. The evaluation includes an English interview and core academic checks. Application details are posted on our homepage, or contact Registrar Office at 02-583-5444."
+            },
+            fees: {
+                th: "💰 **ค่าเทอมและค่าธรรมเนียม**:\n- **ระดับประถม (ป.1-ป.6)**: ค่าเล่าเรียน 37,000 บาท/ภาคเรียน (ค่าอาหารกลางวัน 4,500 บาท/ภาคเรียน)\n- **ระดับมัธยมต้น (ม.1-ม.3)**: ค่าเล่าเรียน 40,000 บาท/ภาคเรียน\n- **ระดับมัธยมปลาย (ม.4-ม.6)**: ค่าเล่าเรียน 42,000 บาท/ภาคเรียน\n*หมายเหตุ: ค่าธรรมเนียมรวมกิจกรรมพัฒนาวิชาการ ค่ายภาษาอังกฤษ และห้องปรับอากาศแล้ว รายละเอียดเพิ่มเติมตรวจสอบได้ที่เมนู 'หลักสูตร > ค่าเล่าเรียน'",
+                en: "💰 **Tuition & Fees**:\n- **Primary (G.1-G.6)**: Tuition 37,000 THB/semester (Meals 4,500 THB/semester)\n- **Junior High (G.7-G.9)**: Tuition 40,000 THB/semester\n- **Senior High (G.10-G.12)**: Tuition 42,000 THB/semester\n*Note: Included camp, academic activities, and air-conditioned classrooms. For detail breakdowns, visit 'Curriculum > Fees'."
+            },
+            curriculum: {
+                th: "🏫 **หลักสูตรและวิชาเรียน**:\nหลักสูตรภาษาอังกฤษของโรงเรียนชลประทานวิทยา สอนวิชาสำคัญหลัก (Mathematics, Science, English, Computer) เป็นภาษาอังกฤษโดยอาจารย์ชาวต่างชาติเจ้าของภาษาและครูชาวไทยผู้เชี่ยวชาญ ร่วมกับกิจกรรมค่ายพัฒนาวิชาการ STEM Day และการทัศนศึกษาต่างประเทศ",
+                en: "🏫 **Curriculum & Subjects**:\nEP instruction delivers core subjects (Mathematics, Science, English, Computer Science) in English by native speakers and experienced Thai faculty. We support this with STEM camps, English camps, and optional study trips."
+            },
+            contact: {
+                th: "📞 **ติดต่อสำนักงาน EP**:\n- แผนกธุรการโครงการฯ ภาคภาษาอังกฤษ (EP)\n- โทรศัพท์: 02-583-5444 ต่อแผนก EP\n- อีเมล: englishprogram@cpw.ac.th\n- วันทำการ: จันทร์ - ศุกร์ เวลา 08.00 - 16.30 น.",
+                en: "📞 **Contact EP Office**:\n- EP Administration Division\n- Tel: 02-583-5444 (Ask for EP office)\n- Email: englishprogram@cpw.ac.th\n- Business Hours: Mon - Fri, 08:00 - 16:30"
+            }
+        };
+
+        function askPresetQuestion(key) {
+            const currentLang = localStorage.getItem('ep_lang') || 'th';
+            const textTh = {
+                admissions: "ข้อมูลการรับสมัครเรียน",
+                fees: "ค่าเทอมและค่าธรรมเนียม",
+                curriculum: "หลักสูตรและวิชาเรียน",
+                contact: "ติดต่อสำนักงาน EP"
+            };
+            const textEn = {
+                admissions: "Admissions Info",
+                fees: "Tuition & Fees",
+                curriculum: "Curriculum Info",
+                contact: "Contact EP Office"
+            };
+
+            const userQuestion = currentLang === 'en' ? textEn[key] : textTh[key];
+            const answer = PRESET_RESPONSES[key][currentLang];
+            
+            appendMessage('user', userQuestion);
+            setTimeout(() => {
+                appendMessage('bot', answer);
+            }, 500);
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('ep-chat-input');
+            if (!input || !input.value.trim()) return;
+
+            const text = input.value.trim();
+            appendMessage('user', text);
+            input.value = '';
+
+            setTimeout(() => {
+                const currentLang = localStorage.getItem('ep_lang') || 'th';
+                const botReply = currentLang === 'en' 
+                    ? "Thank you for your message! Our administrators will get back to you shortly. You can also call us directly at 02-583-5444." 
+                    : "ขอบคุณสำหรับข้อความครับ! เจ้าหน้าที่ฝ่ายโครงการจะติดต่อกลับท่านโดยเร็วที่สุด หรือท่านสามารถโทรสอบถามโดยตรงได้ที่ 02-583-5444";
+                appendMessage('bot', botReply);
+            }, 600);
+        }
+
+        function appendMessage(sender, text) {
+            const container = document.getElementById('ep-chat-messages');
+            if (!container) return;
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = "flex gap-2 " + (sender === 'user' ? 'justify-end' : 'justify-start');
+
+            const contentHtml = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            if (sender === 'user') {
+                msgDiv.innerHTML = `
+                    <div class="bg-brand-500 text-white rounded-2xl rounded-tr-none p-3 shadow-sm max-w-[85%] leading-relaxed font-medium">
+                        ${contentHtml}
+                    </div>
+                `;
+            } else {
+                msgDiv.innerHTML = `
+                    <div class="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">EP</div>
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl rounded-tl-none p-3 shadow-sm max-w-[85%] leading-relaxed">
+                        ${contentHtml}
+                    </div>
+                `;
+            }
+
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+    </script>
+
+
+        <!-- LOGIN MODAL (สำหรับเชื่อมต่อไปยังระบบล็อกอินกลางของโรงเรียน) -->
+    <div id="loginModal" class="fixed inset-0 z-50 overflow-y-auto hidden flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div onclick="closeLoginModal()" id="loginModalBackdrop" class="absolute inset-0 bg-slate-950/60 dark:bg-slate-950/80 backdrop-blur-sm opacity-0 transition-opacity duration-200 ease-out"></div>
+        
+        <!-- Modal Card -->
+        <div id="loginModalCard" class="relative bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6 transform scale-95 opacity-0 transition-all duration-200 ease-out">
+            <!-- Close Button -->
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white text-2xl font-bold transition">&times;</button>
+            
+            <div class="text-center space-y-2">
+                <span class="text-3xl">🔑</span>
+                <h3 class="text-2xl font-black text-slate-950 dark:text-white">
+                    <span class="lang-th">เข้าสู่ระบบสารสนเทศกลาง</span>
+                    <span class="lang-en hidden">Central Portal Login</span>
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    <span class="lang-th">เลือกบริการที่คุณต้องการเข้าใช้งานเพื่อเข้าสู่หน้าเว็บหลักของโรงเรียน</span>
+                    <span class="lang-en hidden">Select the service you wish to access to enter the school's main portal.</span>
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <!-- 1. นักเรียน -->
+                <a href="https://app.cpw.ac.th/cpw_register/login.html" target="_blank" class="block p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 hover:border-brand-secondary transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-brand-secondary/10 text-brand-secondary flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                            🎓
+                        </div>
+                        <div class="text-left">
+                            <span class="block font-black text-slate-900 dark:text-white text-sm">
+                                <span class="lang-th">ระบบทะเบียนนักเรียน (CPW Register)</span>
+                                <span class="lang-en hidden">Student Registration System (CPW Register)</span>
+                            </span>
+                            <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                <span class="lang-th">สำหรับนักเรียนและผู้ปกครองเข้าดูงานทะเบียน</span>
+                                <span class="lang-en hidden">For students and parents to view registrations and academic records</span>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 2. บุคลากร / ครู -->
+                <a href="https://center.cpw.ac.th/cpw_personal/login.php" target="_blank" class="block p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 hover:border-brand-500 dark:hover:border-blue-400 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-500 dark:text-blue-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                            👨‍🏫
+                        </div>
+                        <div class="text-left">
+                            <span class="block font-black text-slate-900 dark:text-white text-sm">
+                                <span class="lang-th">ระบบบุคลากร (CPW Personal)</span>
+                                <span class="lang-en hidden">Staff Information System (CPW Personal)</span>
+                            </span>
+                            <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                <span class="lang-th">สำหรับครู เจ้าหน้าที่ และผู้บริหารโครงการ</span>
+                                <span class="lang-en hidden">For teachers, staff, and program administrators</span>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- สำหรับเจ้าหน้าที่ผู้ดูแลระบบโครงการ EP -->
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-center space-y-2">
+                <span class="block text-[11px] text-slate-400">
+                    <span class="lang-th">สำหรับครูและเจ้าหน้าที่ผู้ดูแลระบบโครงการ EP</span>
+                    <span class="lang-en hidden">For teachers and EP program administrators</span>
+                </span>
+                <a href="admin.html" class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-500 hover:text-brand-600 dark:text-blue-400 dark:hover:text-blue-300 underline">
+                    <span>🔒</span>
+                    <span class="lang-th">เข้าสู่ระบบจัดการข้อมูลหลังบ้าน (Admin Login)</span>
+                    <span class="lang-en hidden">Access Admin Management Portal</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        function selectLevel(level) {
+            // Remove active styles from all cards
+            const levels = ['primary', 'junior', 'senior'];
+            levels.forEach(lvl => {
+                const card = document.getElementById(`card-${lvl}`);
+                const detail = document.getElementById(`details-${lvl}`);
+                
+                if (card) {
+                    card.className = "text-left w-full border-2 border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4 bg-white dark:bg-slate-900 flex flex-col justify-between hover:shadow transition-all duration-300 focus:outline-none";
+                }
+                if (detail) {
+                    detail.classList.add('hidden');
+                }
+            });
+
+            // Set active class on selected card
+            const selectedCard = document.getElementById(`card-${level}`);
+            const selectedDetail = document.getElementById(`details-${level}`);
+            
+            let activeColorClass = "border-brand-500 ring-2 ring-brand-500/10";
+            if (level === 'junior') {
+                activeColorClass = "border-brand-accent ring-2 ring-brand-accent/10";
+            } else if (level === 'senior') {
+                activeColorClass = "border-emerald-500 ring-2 ring-emerald-500/10";
+            }
+
+            if (selectedCard) {
+                selectedCard.className = `text-left w-full border-2 ${activeColorClass} rounded-3xl p-6 sm:p-8 space-y-4 bg-white dark:bg-slate-900 flex flex-col justify-between shadow transition-all duration-300 focus:outline-none`;
+            }
+            if (selectedDetail) {
+                selectedDetail.classList.remove('hidden');
+            }
+        }
+        
+        // Initial setup
+        window.addEventListener('DOMContentLoaded', () => {
+            selectLevel('primary');
+        });
+    </script>
+
+</body>
+</html>

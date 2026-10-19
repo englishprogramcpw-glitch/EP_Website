@@ -1,0 +1,46 @@
+# Operating System & IDE
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Local Windows PHP Runtime & Binaries
+.php/
+argon.cmd
+argon.ps1
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Node & Preview Cache
+node_modules/
+.npm/
+npm-debug.log*
+
+# Temporary & Local Backup Files
+*.bak
+*.tmp
+*.temp
+*.bad
+*.curr
+*.prev
+*.reconstructed
+restored_raw.txt
+scratchpad.md
+scratch/
+test_*.png
+adaptive_*.png
+test_*.js
+test_*.php
+test_sheet.xlsx
+poster.png
+staff_backup.php
+sync_staff_backup.py
+staff_with_click_modal.php
+index-2.php
+
+# Environment & Sensitive Server Config (Keep template instead)
+# data/auth_config.php contains hashed password; keep auth_config.php.example in git

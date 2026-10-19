@@ -1,0 +1,60 @@
+/* editor.css - สไตล์ของ Visual Editor หน้าเว็บ (โหมดแก้ไขสไตล์ Photoshop) */
+
+body.ep-editor-active [data-edit-id] {
+    cursor: pointer !important;
+    position: relative;
+}
+
+body.ep-editor-active [data-edit-id]:hover {
+    outline: 2px dashed #3b82f6 !important;
+    outline-offset: 4px;
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* แถบเครื่องมือแอดมินลอยตัวด้านล่าง */
+#ep-editor-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    background-color: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 9999px;
+    backdrop-filter: blur(12px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #ffffff;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#ep-editor-bar button {
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+
+.ep-editor-badge {
+    position: absolute;
+    top: -24px;
+    left: 0;
+    background-color: #3b82f6;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 100;
+    display: none;
+}
+
+body.ep-editor-active [data-edit-id]:hover > .ep-editor-badge {
+    display: block;
+}

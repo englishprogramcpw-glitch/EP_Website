@@ -1,0 +1,2438 @@
+<?php
+require_once __DIR__ . '/auth.php';
+
+// จัดการคำขอออกจากระบบ
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    admin_logout();
+    header('Location: admin.php');
+    exit;
+}
+
+// จัดการฟอร์มเข้าสู่ระบบ (POST)
+$loginError = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $csrf = $_POST['csrf_token'] ?? '';
+    
+    if (empty($_SESSION['csrf_token']) || $csrf !== $_SESSION['csrf_token']) {
+        $loginError = 'การส่งข้อมูลไม่ถูกต้อง กรุณารีเฟรชแล้วลองใหม่อีกครั้ง (CSRF Verification Failed)';
+    } else {
+        $loginRes = verify_admin_login($username, $password);
+        if ($loginRes['success']) {
+            header('Location: admin.php');
+            exit;
+        } else {
+            $loginError = $loginRes['message'];
+        }
+    }
+}
+
+// ตรวจสอบว่าผ่านการล็อกอินหรือยัง
+if (!is_admin_logged_in()):
+    $pageTitle = "เข้าสู่ระบบหลังบ้าน | English Program (EP) CPW";
+?>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $pageTitle; ?></title>
+    <?php include 'head.php'; ?>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-slate-950 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
+        <div class="text-center space-y-3">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-500 text-white font-black text-2xl font-english shadow-lg shadow-brand-500/30">
+                EP
+            </div>
+            <h1 class="text-xl font-black text-white tracking-wide">
+                ระบบจัดการข้อมูลหลังบ้าน (Admin)
+            </h1>
+            <p class="text-xs text-slate-400 leading-relaxed">
+                โครงการจัดการเรียนการสอนตามหลักสูตรกระทรวงศึกษาธิการเป็นภาษาอังกฤษ<br>โรงเรียนชลประทานวิทยา
+            </p>
+        </div>
+
+        <?php if (!empty($loginError)): ?>
+            <div class="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+                <span>⚠️</span>
+                <span><?php echo htmlspecialchars($loginError, ENT_QUOTES, 'UTF-8'); ?></span>
+            </div>
+        <?php endif; ?>
+
+        <form method="POST" action="admin.php" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
+            
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold text-slate-300">ชื่อผู้ใช้งาน (Username)</label>
+                <input type="text" name="username" required autocomplete="username" value="admin"
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-brand-500 transition">
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold text-slate-300">รหัสผ่าน (Password)</label>
+                <div class="relative">
+                    <input type="password" id="loginPassword" name="password" required autocomplete="current-password"
+                        placeholder="••••••••"
+                        class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-brand-500 transition pr-10">
+                    <button type="button" onclick="togglePassVisibility()" class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 text-sm">
+                        👁️
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" name="login_submit" value="1"
+                class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm shadow-lg shadow-brand-500/20 transition duration-200">
+                🔐 เข้าสู่ระบบ (Sign In)
+            </button>
+        </form>
+
+        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] text-slate-400 space-y-1">
+            <p class="font-bold text-slate-300">📌 รหัสผ่านเริ่มต้น:</p>
+            <p>ชื่อผู้ใช้: <code class="text-amber-400 font-mono">admin</code> | รหัสผ่าน: <code class="text-amber-400 font-mono">epadmin2026</code></p>
+            <p class="text-[10px] text-slate-500">* สามารถเปลี่ยนรหัสผ่านได้ที่เมนูความปลอดภัยหลังเข้าสู่ระบบ</p>
+        </div>
+
+        <div class="text-center pt-2">
+            <a href="index.php" class="text-xs text-slate-500 hover:text-slate-300 transition">
+                ← กลับสู่หน้าหลักเว็บไซต์
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function togglePassVisibility() {
+            const input = document.getElementById('loginPassword');
+            if (input.type === 'password') {
+                input.type = 'text';
+            } else {
+                input.type = 'password';
+            }
+        }
+    </script>
+</body>
+</html>
+<?php
+exit;
+endif;
+
+$pageTitle = "ระบบหลังบ้านผู้ดูแลระบบ | English Program (EP) CPW";
+?>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <script>
+        // ซิงค์สถานะล็อกอินเข้าสู่ localStorage สำหรับสคริปต์หน้าเว็บ
+        localStorage.setItem('ep_mock_user', JSON.stringify({
+            username: <?php echo json_encode($_SESSION['ep_admin_user']['username'] ?? 'admin'); ?>,
+            name: <?php echo json_encode($_SESSION['ep_admin_user']['name'] ?? 'ผู้ดูแลระบบ EP'); ?>,
+            role: 'admin'
+        }));
+        window.csrfToken = "<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? 'ep_csrf_token', ENT_QUOTES, 'UTF-8'); ?>";
+    </script>
+    <?php include 'head.php'; ?>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="js/news.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+
+    <!-- NAVIGATION BAR FOR ADMIN -->
+    <nav class="sticky top-0 z-40 bg-white/95 border-b border-slate-200 dark:bg-slate-950/95 dark:border-slate-800 transition-colors">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo / Title -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='index.php'">
+                    <div class="w-10 h-10 rounded-lg bg-brand-500 flex items-center justify-center text-white font-bold font-english text-lg shadow-md">
+                        EP
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-lg text-slate-900 dark:text-white tracking-wide block">EP ADMIN PANEL</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-400 -mt-1 block">ระบบจัดการข้อมูลและประกาศข่าวสารโรงเรียน</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Nav Links -->
+                <div class="hidden md:flex items-center gap-6">
+                    <a href="index.php" class="text-sm font-semibold text-slate-600 hover:text-brand-500 dark:text-slate-300 dark:hover:text-blue-400 transition">หน้าแรก</a>
+                    <a href="about.php" class="text-sm font-semibold text-slate-600 hover:text-brand-500 dark:text-slate-300 dark:hover:text-blue-400 transition">ข้อมูลทั่วไป</a>
+                    <a href="curriculum.php" class="text-sm font-semibold text-slate-600 hover:text-brand-500 dark:text-slate-300 dark:hover:text-blue-400 transition">หลักสูตร</a>
+                    <a href="fees.php" class="text-sm font-semibold text-slate-600 hover:text-brand-500 dark:text-slate-300 dark:hover:text-blue-400 transition">ค่าเล่าเรียน</a>
+                    <a href="staff.php" class="text-sm font-semibold text-slate-600 hover:text-brand-500 dark:text-slate-300 dark:hover:text-blue-400 transition">บุคลากร</a>
+                    <a href="index.php#announcements" class="text-sm font-semibold text-slate-600 hover:text-brand-500 dark:text-slate-300 dark:hover:text-blue-400 transition">ข่าวสาร & กิจกรรม</a>
+                    
+                    <!-- Admin User Status & Logout -->
+                    <div class="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span><?php echo htmlspecialchars($_SESSION['ep_admin_user']['name'] ?? 'ผู้ดูแลระบบ EP', ENT_QUOTES, 'UTF-8'); ?></span>
+                        </span>
+                        <a href="admin.php?action=logout" class="text-xs font-bold px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition dark:bg-red-950/40 dark:text-red-400 border border-red-200 dark:border-slate-800 flex items-center gap-1">
+                            <span>🚪</span>
+                            <span>ออก</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="flex md:hidden items-center gap-3">
+                    <button onclick="toggleMobileMenu()" class="p-2 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Links -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 px-4 py-3 space-y-2">
+            <a href="index.php" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900">หน้าแรก</a>
+            <a href="about.php" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900">ข้อมูลทั่วไป</a>
+            <a href="curriculum.php" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900">หลักสูตร</a>
+            <a href="fees.php" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900">ค่าเล่าเรียน</a>
+            <a href="staff.php" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900">บุคลากร</a>
+            
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">👤 <?php echo htmlspecialchars($_SESSION['ep_admin_user']['name'] ?? 'ผู้ดูแลระบบ EP', ENT_QUOTES, 'UTF-8'); ?></span>
+                <a href="admin.php?action=logout" class="text-xs font-bold px-3 py-1 bg-red-100 text-red-600 rounded-lg">ออกจากระบบ</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="flex-grow max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- SIDEBAR MENUS (3 Columns) -->
+            <div class="lg:col-span-3 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 space-y-4 shadow-sm">
+                <h3 class="font-extrabold text-slate-900 dark:text-white text-base border-b border-slate-100 dark:border-slate-800 pb-2">📂 เมนูหลังบ้าน</h3>
+                <div class="flex flex-col gap-1 text-sm font-semibold">
+                    <button onclick="switchAdminTab('dashboard')" id="btn-admin-dashboard" class="w-full text-left px-4 py-2.5 rounded-xl bg-brand-500 text-white transition">📊 แผงควบคุม (Dashboard)</button>
+                    <button onclick="switchAdminTab('tour')" id="btn-admin-tour" class="w-full text-left px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition flex items-center justify-between">
+                        <span>🏛️ นัดหมายเข้าชมโครงการ</span>
+                        <span id="badge-tour-status" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">เปิดรับ</span>
+                    </button>
+                    <button onclick="switchAdminTab('slides')" id="btn-admin-slides" class="w-full text-left px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition">🖼️ จัดการสไลด์หน้าแรก</button>
+                    <button onclick="switchAdminTab('staff')" id="btn-admin-staff" class="w-full text-left px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition">👨‍🏫 จัดการข้อมูลบุคลากร</button>
+                    <button onclick="switchAdminTab('site_settings')" id="btn-admin-site_settings" class="w-full text-left px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition">📝 จัดการเนื้อหาเว็บไซต์</button>
+                    <button onclick="switchAdminTab('security')" id="btn-admin-security" class="w-full text-left px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition flex items-center justify-between">
+                        <span>🔐 บัญชีและความปลอดภัย</span>
+                        <?php if (!empty($_SESSION['ep_admin_user']['must_change'])): ?>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400">ควรเปลี่ยนรหัส</span>
+                        <?php endif; ?>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MAIN DOCK AREA (9 Columns) -->
+            <div class="lg:col-span-9 space-y-6">
+
+                <?php if (!empty($_SESSION['ep_admin_user']['must_change'])): ?>
+                <!-- SECURITY WARNING BANNER -->
+                <div id="security-warning-banner" class="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">⚠️</span>
+                        <div>
+                            <h4 class="font-bold text-amber-600 dark:text-amber-400 text-sm">คุณยังคงใช้รหัสผ่านเริ่มต้นของระบบ (epadmin2026)</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">เพื่อความปลอดภัยของข้อมูลโครงการ EP บนเซิร์ฟเวอร์โรงเรียน กรุณาเปลี่ยนเป็นรหัสผ่านส่วนตัว</p>
+                        </div>
+                    </div>
+                    <button onclick="switchAdminTab('security')" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl transition whitespace-nowrap shadow-sm">
+                        เปลี่ยนรหัสผ่านทันที
+                    </button>
+                </div>
+                <?php endif; ?>
+
+                <!-- 1. DASHBOARD TAB -->
+                <div id="admin-tab-dashboard" class="space-y-6">
+                    <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div class="space-y-2">
+                            <h2 class="text-2xl font-black text-slate-900 dark:text-white">แผงควบคุมระบบจัดการข้อมูล</h2>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">ภาพรวมสถิติและสถานะการเชื่อมโยงระบบหลังบ้านโครงการฯ ภาคภาษาอังกฤษ (EP)</p>
+                        </div>
+                        <button id="btn-sync-news" onclick="triggerNewsSync()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 self-start sm:self-auto flex-shrink-0">
+                            🔄 ดึงข่าวสาร & กิจกรรมล่าสุด
+                        </button>
+                    </div>
+
+                    <!-- WEBSITE VISIBILITY & MAINTENANCE GATEWAY CARD -->
+                    <?php
+                    $mConfig = get_maintenance_config();
+                    $isMaintActive = !empty($mConfig['enabled']);
+                    $isRedirectFb = !isset($mConfig['redirect_to_facebook']) || $mConfig['redirect_to_facebook'] !== false;
+                    ?>
+                    <div id="maintenance-status-card" class="rounded-3xl p-6 border transition-all duration-300 <?php echo $isMaintActive ? 'bg-amber-500/10 border-amber-500/30' : 'bg-emerald-500/10 border-emerald-500/30'; ?>">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-3xl" id="maint-icon"><?php echo $isMaintActive ? '🔒' : '🌐'; ?></span>
+                                <div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <h3 class="font-black text-slate-900 dark:text-white text-base">สวิตช์ควบคุมการเผยแพร่เว็บไซต์ (Visibility Gateway)</h3>
+                                        <span id="maint-badge" class="text-[11px] px-2.5 py-0.5 rounded-full font-bold <?php echo $isMaintActive ? 'bg-amber-500 text-slate-950' : 'bg-emerald-500 text-white'; ?>">
+                                            <?php echo $isMaintActive ? '🚧 ปิดปรับปรุง (ส่งไป Facebook)' : '🟢 ออนไลน์สู่สาธารณะ (Live)'; ?>
+                                        </span>
+                                    </div>
+                                    <p id="maint-desc" class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                        <?php if ($isMaintActive): ?>
+                                            บุคคลภายนอกที่คลิกมาจากเว็บโรงเรียนจะถูก <strong>ส่งต่อไปยัง Facebook เพจ EP อัตโนมัติ</strong> (เฉพาะแอดมินที่ล็อกอินเท่านั้นที่ดูเว็บนี้ได้)
+                                        <?php else: ?>
+                                            เปิดให้ทุกคนเข้าชมเว็บไซต์โครงการ EP ตัวจริงได้ตามปกติ
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                                <button type="button" onclick="toggleMaintenanceMode()" id="btnToggleMaint" class="px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-sm flex items-center gap-2 <?php echo $isMaintActive ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-amber-500 hover:bg-amber-600 text-slate-950'; ?>">
+                                    <span id="btnToggleMaintIcon"><?php echo $isMaintActive ? '🚀' : '🔒'; ?></span>
+                                    <span id="btnToggleMaintText"><?php echo $isMaintActive ? 'กดเปิดเว็บไซต์สู่สาธารณะ' : 'กดสลับเป็นส่งไป Facebook'; ?></span>
+                                </button>
+                                <button type="button" onclick="switchAdminTab('security')" class="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                                    ⚙️ ตั้งค่า
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STATS GRID -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <!-- Stat 1 -->
+                        <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+                            <span class="text-4xl">📰</span>
+                            <div>
+                                <span class="block text-2xl font-black text-slate-900 dark:text-white" id="stat-news-count">0</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">ข่าวและกิจกรรมในระบบ</span>
+                            </div>
+                        </div>
+                        <!-- Stat 2 -->
+                        <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+                            <span class="text-4xl">👨‍🏫</span>
+                            <div>
+                                <span class="block text-2xl font-black text-slate-900 dark:text-white">10 คน</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">คณะครูและบุคลากร EP</span>
+                            </div>
+                        </div>
+                        <!-- Stat 3 -->
+                        <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+                            <span class="text-4xl">🔗</span>
+                            <div>
+                                <span class="block text-xs font-bold text-amber-500 dark:text-amber-400" id="stat-api-status">โหมดจำลองถิ่นฐาน</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">สถานะฐานข้อมูลกลาง</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SYSTEM FEEDBACK INFO -->
+                    <div class="bg-blue-500/10 border border-blue-500/25 rounded-3xl p-6 space-y-3">
+                        <h4 class="font-bold text-brand-600 dark:text-blue-400 text-sm">💡 คู่มือการจัดการระบบ:</h4>
+                        <ul class="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside leading-relaxed">
+                            <li><strong>การดึงข่าวสารและภาพกิจกรรม</strong>: ระบบจะดึงข่าวจากเว็บไซต์โรงเรียนกลาง (ที่มีคำค้นหา EP) และแท็บ `News` / `Activities` ใน Google Sheet อัตโนมัติ โดยคลิกปุ่ม <strong>"ดึงข่าวสาร & กิจกรรมล่าสุด"</strong> ด้านบนนี้</li>
+                            <li><strong>การแก้ไขเนื้อหาหน้าหลักและค่าเทอม</strong>: แก้ไขข้อมูลใน Google Sheets แล้วกดปุ่ม <strong>"ซิงค์ข้อมูลจาก Google Sheet"</strong> ในหน้าเมนู <strong>"จัดการเนื้อหาเว็บไซต์"</strong></li>
+                            <li><strong>การแก้ไขข้อมูลบุคลากร</strong>: ซิงค์จากฐานข้อมูลทะเบียนโรงเรียน หรือนำเข้าไฟล์ตาราง Excel รายชื่อครูได้โดยตรงในเมนู <strong>"จัดการข้อมูลบุคลากร"</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+
+
+                <!-- 4. MANAGE STAFF TAB -->
+                <div id="admin-tab-staff" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-900 dark:text-white">จัดการข้อมูลบุคลากรและคณะครู</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">ตารางจัดการรายชื่อครู ตำแหน่ง และนำเข้าไฟล์ Excel/CSV</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelImport(event)">
+                            <button id="btn-sync-staff" onclick="triggerBackendSync()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5">
+                                🔄 ซิงค์ข้อมูลระบบโรงเรียน
+                            </button>
+                            <button onclick="document.getElementById('excelFileInput').click()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5">
+                                📥 นำเข้าจาก Excel (.xlsx / .csv)
+                            </button>
+                            <button onclick="openStaffFormModal()" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition shadow-sm">
+                                ➕ เพิ่มบุคลากรใหม่
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Guidelines Alert -->
+                    <div class="bg-emerald-500/10 border border-emerald-500/25 rounded-3xl p-6 space-y-2">
+                        <h4 class="font-bold text-emerald-700 dark:text-emerald-400 text-sm">💡 โครงสร้างคอลัมน์ของไฟล์ Excel สำหรับนำเข้า:</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                            คอลัมน์แถวแรกสุด (Header) ของ Excel ต้องเรียงลำดับดังนี้ หรือมีหัวข้อตามนี้:<br>
+                            <code>ชื่อ (ไทย)</code> | <code>Name (English)</code> | <code>ตำแหน่ง (ไทย)</code> | <code>Role (English)</code> | <code>หมวดหมู่ (admin/primary/secondary)</code> | <code>ครูต่างชาติ (yes/no)</code> | <code>ห้องเรียน (ไทย)</code> | <code>Classroom (English)</code> | <code>วิชาที่สอน (คั่นด้วย ,)</code> | <code>Subjects (คั่นด้วย ,)</code> | <code>รูปภาพ (URL)</code>
+                        </p>
+                    </div>
+
+                    <!-- Staff Table -->
+                    <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs sm:text-sm">
+                                <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-150 dark:border-slate-800">
+                                    <tr>
+                                        <th class="px-6 py-4">รูปภาพ</th>
+                                        <th class="px-6 py-4">ชื่อ (TH/EN)</th>
+                                        <th class="px-6 py-4">ตำแหน่ง (TH/EN)</th>
+                                        <th class="px-6 py-4">ระดับชั้น/ห้อง</th>
+                                        <th class="px-6 py-4 text-center">การจัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staff-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                                    <!-- Table Rows dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. CAMPUS TOUR MANAGEMENT TAB -->
+                <div id="admin-tab-tour" class="hidden space-y-6">
+                    <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+                            <div>
+                                <h2 class="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span>🏛️ จัดการระบบนัดหมายเข้าชมโครงการ (Campus Tour)</span>
+                                </h2>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">ควบคุมการเปิด/ปิดรับคำขอนัดหมาย และตรวจสอบรายชื่อผู้ปกครองที่ลงทะเบียน</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button type="button" onclick="loadTourBookings()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                                    🔄 รีเฟรชรายชื่อ
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- TOGGLE SWITCH CARD -->
+                        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-bold text-slate-900 dark:text-white">สถานะการเปิดรับนัดหมาย:</span>
+                                    <span id="tour-toggle-label" class="text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                                        เปิดรับการนัดหมายตามปกติ
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">เมื่อปิดใช้งาน หน้าเว็บ <a href="tour.php" target="_blank" class="text-brand-500 underline font-semibold">tour.php</a> จะซ่อนแบบฟอร์มและแสดงกล่องข้อความปิดรับชั่วคราวทันที</p>
+                            </div>
+
+                            <label class="relative inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" id="tour-status-toggle" onchange="handleTourToggleChange(this.checked)" class="sr-only peer">
+                                <div class="w-14 h-8 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500"></div>
+                            </label>
+                        </div>
+
+                        <!-- CUSTOM CLOSED MESSAGE SETTINGS -->
+                        <div id="tour-closed-config" class="hidden p-5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 space-y-4">
+                            <h4 class="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">⚙️ ข้อความที่จะแสดงเมื่อปิดรับนัดหมาย:</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">หัวข้อประกาศ (ภาษาไทย)</label>
+                                    <input type="text" id="tour-closed-title-th" class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs" placeholder="ระบบนัดหมายเข้าชมโครงการปิดรับชั่วคราว">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Title (English)</label>
+                                    <input type="text" id="tour-closed-title-en" class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs" placeholder="Campus Tour Booking Temporarily Closed">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">คำชี้แจง / เหตุผล (ภาษาไทย)</label>
+                                <textarea id="tour-closed-msg-th" rows="2" class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs" placeholder="ขณะนี้ระบบนัดหมายเข้าชมโครงการฯ ปิดรับการลงทะเบียนชั่วคราว..."></textarea>
+                            </div>
+                            <div>
+                                <button type="button" onclick="saveTourClosedConfig()" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition shadow-sm">
+                                    💾 บันทึกข้อความปิดรับนัดหมาย
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- BOOKINGS DATA TABLE -->
+                        <div class="space-y-3 pt-2">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">📋 รายการคำขอนัดหมายเยี่ยมชมล่าสุด</h3>
+                                <span id="tour-bookings-count" class="text-xs text-slate-500">0 รายการ</span>
+                            </div>
+
+                            <div class="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-xs">
+                                        <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
+                                            <tr>
+                                                <th class="px-4 py-3">วันที่ขอนัดหมาย</th>
+                                                <th class="px-4 py-3">ช่วงเวลา</th>
+                                                <th class="px-4 py-3">ชื่อผู้ปกครอง</th>
+                                                <th class="px-4 py-3">เบอร์ติดต่อ / LINE</th>
+                                                <th class="px-4 py-3">ระดับชั้นที่สนใจ</th>
+                                                <th class="px-4 py-3">นักเรียน</th>
+                                                <th class="px-4 py-3">หมายเหตุ</th>
+                                                <th class="px-4 py-3 text-center">เวลาที่ส่งคำขอ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tour-bookings-tbody" class="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                                            <tr>
+                                                <td colspan="8" class="text-center py-8 text-slate-400">กำลังโหลดรายการนัดหมาย...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. MANAGE SLIDES TAB -->
+                <div id="admin-tab-slides" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-900 dark:text-white">จัดการสไลด์แนะนำหน้าแรก</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">เพิ่ม ลบ แก้ไข และสลับลำดับของสไลด์ในแบนเนอร์ต้อนรับหน้าแรก</p>
+                        </div>
+                        <button onclick="openSlidesFormModal()" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition shadow-sm">
+                            ➕ เพิ่มสไลด์ใหม่
+                        </button>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs sm:text-sm">
+                                <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-150 dark:border-slate-800">
+                                    <tr>
+                                        <th class="px-6 py-4">รูปภาพ</th>
+                                        <th class="px-6 py-4">ป้ายกำกับ (TH/EN)</th>
+                                        <th class="px-6 py-4">หัวข้อสไลด์ (TH/EN)</th>
+                                        <th class="px-6 py-4 text-center">จัดลำดับ</th>
+                                        <th class="px-6 py-4 text-center">การจัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="slides-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                                    <!-- Table Rows dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- 6. SITE SETTINGS TAB -->
+                <div id="admin-tab-site_settings" class="hidden space-y-6">
+                    <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div class="space-y-2">
+                                <h2 class="text-2xl font-black text-slate-900 dark:text-white">จัดการเนื้อหาและข้อความบนเว็บไซต์</h2>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">แก้ไขอัตราค่าธรรมเนียม ข้อมูลติดต่อสำนักงาน และประวัติความเป็นมาได้โดยตรง</p>
+                            </div>
+                            <button id="btn-sync-settings" type="button" onclick="triggerSettingsSync()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 self-start sm:self-auto flex-shrink-0">
+                                🔄 ซิงค์ข้อมูลจาก Google Sheet
+                            </button>
+                        </div>
+
+                        <form id="siteSettingsForm" onsubmit="handleSiteSettingsSubmit(event)" class="space-y-8 pt-4 border-t border-slate-100 dark:border-slate-800">
+                            <!-- Page Media & Banners Section (จัดการรูปภาพประจำหน้าต่างๆ) -->
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                                    <div>
+                                        <h3 class="text-sm font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider">🖼️ จัดการรูปภาพประจำหน้าและแบนเนอร์ (Page Media & Banners)</h3>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">เลือกภาพกิจกรรมจริงของ EP หรือใส่ URL รูปภาพเพื่อปรับเปลี่ยนภาพพื้นหลังของการ์ดและหัวเว็บแต่ละหน้าได้โดยตรง</p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- 1. Home Primary Card -->
+                                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-bold text-slate-900 dark:text-white">🏫 หน้าแรก: การ์ด ป.1 - ป.6</span>
+                                        </div>
+                                        <div class="h-28 rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800">
+                                            <img id="prev_home_primary_img" src="" class="w-full h-full object-cover" alt="Primary Preview">
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <label class="cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 bg-brand-500 hover:bg-brand-600 active:scale-95 text-white rounded-lg text-[11px] font-bold shadow-sm transition">
+                                                <span>📁 เลือกรูปจากเครื่อง</span>
+                                                <input type="file" accept="image/*" class="hidden" onchange="uploadMediaFile(this, 'home_primary_img')">
+                                            </label>
+                                            <span id="upload_status_home_primary_img" class="text-[10px] font-semibold"></span>
+                                        </div>
+                                        <input type="text" id="set_home_primary_img" oninput="updateMediaPreview('home_primary_img', this.value)" class="w-full px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs" placeholder="URL รูปภาพ หรือ path..." required>
+                                        <div class="flex gap-1.5">
+                                            <button type="button" onclick="quickSetMedia('home_primary_img', 'https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260803161101/32026080316110120260803161147_668274.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">✍️ Cursive Contest</button>
+                                            <button type="button" onclick="quickSetMedia('home_primary_img', 'https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114421_290234.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">🌟 Open House</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2. Home Junior Card -->
+                                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-bold text-slate-900 dark:text-white">📘 หน้าแรก: การ์ด ม.1 - ม.3</span>
+                                        </div>
+                                        <div class="h-28 rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800">
+                                            <img id="prev_home_junior_img" src="" class="w-full h-full object-cover" alt="Junior Preview">
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <label class="cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 bg-brand-500 hover:bg-brand-600 active:scale-95 text-white rounded-lg text-[11px] font-bold shadow-sm transition">
+                                                <span>📁 เลือกรูปจากเครื่อง</span>
+                                                <input type="file" accept="image/*" class="hidden" onchange="uploadMediaFile(this, 'home_junior_img')">
+                                            </label>
+                                            <span id="upload_status_home_junior_img" class="text-[10px] font-semibold"></span>
+                                        </div>
+                                        <input type="text" id="set_home_junior_img" oninput="updateMediaPreview('home_junior_img', this.value)" class="w-full px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs" placeholder="URL รูปภาพ หรือ path..." required>
+                                        <div class="flex gap-1.5">
+                                            <button type="button" onclick="quickSetMedia('home_junior_img', 'https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260826141342/32026082614134220260826142252_444095.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">🏆 Spelling Bee</button>
+                                            <button type="button" onclick="quickSetMedia('home_junior_img', 'https://app.cpw.ac.th/cpw_api_content/images/activities/3202608250743421069083217.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">♟️ Scrabble EP</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 3. Home Senior Card -->
+                                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-bold text-slate-900 dark:text-white">📕 หน้าแรก: การ์ด ม.4 - ม.6</span>
+                                        </div>
+                                        <div class="h-28 rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800">
+                                            <img id="prev_home_senior_img" src="" class="w-full h-full object-cover" alt="Senior Preview">
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <label class="cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 bg-brand-500 hover:bg-brand-600 active:scale-95 text-white rounded-lg text-[11px] font-bold shadow-sm transition">
+                                                <span>📁 เลือกรูปจากเครื่อง</span>
+                                                <input type="file" accept="image/*" class="hidden" onchange="uploadMediaFile(this, 'home_senior_img')">
+                                            </label>
+                                            <span id="upload_status_home_senior_img" class="text-[10px] font-semibold"></span>
+                                        </div>
+                                        <input type="text" id="set_home_senior_img" oninput="updateMediaPreview('home_senior_img', this.value)" class="w-full px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs" placeholder="URL รูปภาพ หรือ path..." required>
+                                        <div class="flex gap-1.5">
+                                            <button type="button" onclick="quickSetMedia('home_senior_img', 'https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114424_685193.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">📢 Admissions 4K</button>
+                                            <button type="button" onclick="quickSetMedia('home_senior_img', 'https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114421_290234.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">🌟 Showcase</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4. Home Showcase Box -->
+                                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-bold text-slate-900 dark:text-white">🏛️ หน้าแรก: กล่องวิสัยทัศน์อาคาร</span>
+                                        </div>
+                                        <div class="h-28 rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800">
+                                            <img id="prev_home_showcase_img" src="" class="w-full h-full object-cover" alt="Showcase Preview">
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <label class="cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 bg-brand-500 hover:bg-brand-600 active:scale-95 text-white rounded-lg text-[11px] font-bold shadow-sm transition">
+                                                <span>📁 เลือกรูปจากเครื่อง</span>
+                                                <input type="file" accept="image/*" class="hidden" onchange="uploadMediaFile(this, 'home_showcase_img')">
+                                            </label>
+                                            <span id="upload_status_home_showcase_img" class="text-[10px] font-semibold"></span>
+                                        </div>
+                                        <input type="text" id="set_home_showcase_img" oninput="updateMediaPreview('home_showcase_img', this.value)" class="w-full px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs" placeholder="URL รูปภาพ หรือ path..." required>
+                                        <div class="flex gap-1.5">
+                                            <button type="button" onclick="quickSetMedia('home_showcase_img', 'img/ep_cover_banner.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">🏛️ อาคารเรียน EP</button>
+                                            <button type="button" onclick="quickSetMedia('home_showcase_img', 'img/ep_bot_lobby_bg.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">🏢 โถง Lobby EP</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 5. About Header Banner -->
+                                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-bold text-slate-900 dark:text-white">📖 ข้อมูลทั่วไป: แบนเนอร์หัวเว็บ</span>
+                                        </div>
+                                        <div class="h-28 rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800">
+                                            <img id="prev_about_banner_img" src="" class="w-full h-full object-cover" alt="About Banner Preview">
+                                        </div>
+                                        <input type="text" id="set_about_banner_img" oninput="updateMediaPreview('about_banner_img', this.value)" class="w-full px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs" placeholder="URL รูปภาพ..." required>
+                                        <div class="flex gap-1.5">
+                                            <button type="button" onclick="quickSetMedia('about_banner_img', 'img/ep_cover_banner.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">🏛️ อาคารเรียน EP</button>
+                                            <button type="button" onclick="quickSetMedia('about_banner_img', 'img/ep_bot_lobby_bg.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">🏢 Lobby EP</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 6. Curriculum Header Banner -->
+                                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-bold text-slate-900 dark:text-white">📘 โครงสร้างหลักสูตร: แบนเนอร์</span>
+                                        </div>
+                                        <div class="h-28 rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800">
+                                            <img id="prev_curriculum_banner_img" src="" class="w-full h-full object-cover" alt="Curriculum Banner Preview">
+                                        </div>
+                                        <input type="text" id="set_curriculum_banner_img" oninput="updateMediaPreview('curriculum_banner_img', this.value)" class="w-full px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs" placeholder="URL รูปภาพ..." required>
+                                        <div class="flex gap-1.5">
+                                            <button type="button" onclick="quickSetMedia('curriculum_banner_img', 'https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114421_290234.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">🌟 Showcase</button>
+                                            <button type="button" onclick="quickSetMedia('curriculum_banner_img', 'img/ep_cover_banner.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">🏛️ อาคาร EP</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 7. Admission Header Banner -->
+                                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-bold text-slate-900 dark:text-white">📢 การรับสมัคร: แบนเนอร์หัวเว็บ</span>
+                                        </div>
+                                        <div class="h-28 rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800">
+                                            <img id="prev_admission_banner_img" src="" class="w-full h-full object-cover" alt="Admission Banner Preview">
+                                        </div>
+                                        <input type="text" id="set_admission_banner_img" oninput="updateMediaPreview('admission_banner_img', this.value)" class="w-full px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs" placeholder="URL รูปภาพ..." required>
+                                        <div class="flex gap-1.5">
+                                            <button type="button" onclick="quickSetMedia('admission_banner_img', 'https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114424_685193.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">📢 Admissions 4K</button>
+                                            <button type="button" onclick="quickSetMedia('admission_banner_img', 'img/ep_cover_banner.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">🏛️ อาคาร EP</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 8. Tour Header Banner -->
+                                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-bold text-slate-900 dark:text-white">🏫 นัดหมายเข้าชม: แบนเนอร์</span>
+                                        </div>
+                                        <div class="h-28 rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800">
+                                            <img id="prev_tour_banner_img" src="" class="w-full h-full object-cover" alt="Tour Banner Preview">
+                                        </div>
+                                        <input type="text" id="set_tour_banner_img" oninput="updateMediaPreview('tour_banner_img', this.value)" class="w-full px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs" placeholder="URL รูปภาพ..." required>
+                                        <div class="flex gap-1.5">
+                                            <button type="button" onclick="quickSetMedia('tour_banner_img', 'img/ep_cover_banner.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">🏛️ อาคาร EP</button>
+                                            <button type="button" onclick="quickSetMedia('tour_banner_img', 'img/ep_bot_lobby_bg.jpg')" class="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition">🏢 Lobby EP</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contact Info Section -->
+                            <div class="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+                                <h3 class="text-sm font-extrabold text-brand-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-1">📞 ข้อมูลสำนักงานและการติดต่อ</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">เบอร์โทรศัพท์ติดต่อ</label>
+                                        <input type="text" id="setContactPhone" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">อีเมลติดต่อฝ่ายวิชาการ</label>
+                                        <input type="email" id="setContactEmail" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm" required>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">ลิงก์หรือไอดีเพจ Facebook ของโครงการ EP (Facebook Page URL / ID)</label>
+                                    <input type="text" id="setContactFacebook" placeholder="profile.php?id=100093686707861" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">ที่ตั้งโครงการ (ภาษาไทย)</label>
+                                    <textarea id="setContactAddressTh" rows="2" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm" required></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">ที่ตั้งโครงการ (ภาษาอังกฤษ)</label>
+                                    <textarea id="setContactAddressEn" rows="2" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm" required></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Tuition Fee Section -->
+                            <div class="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                                <h3 class="text-sm font-extrabold text-brand-accent uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-1">💰 อัตราค่าธรรมเนียมการศึกษา</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                    <!-- Primary rates -->
+                                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-3">
+                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">ประถมศึกษา (ป.1-6)</span>
+                                        <div>
+                                            <label class="block text-[11px] text-slate-500">ค่าเล่าเรียน / เทอม (บาท)</label>
+                                            <input type="text" id="setFeesPrimaryTuition" class="w-full px-3 py-1.5 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded-lg text-sm text-slate-950 dark:text-white" required>
+                                        </div>
+                                        <div class="hidden">
+                                            <label class="block text-[11px] text-slate-500">ค่ากิจกรรม / ปี (บาท)</label>
+                                            <input type="text" id="setFeesPrimaryActivities" class="w-full px-3 py-1.5 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded-lg text-sm text-slate-950 dark:text-white" value="0" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] text-slate-500">ค่าอาหารกลางวัน / เทอม (บาท)</label>
+                                            <input type="text" id="setFeesPrimaryFood" class="w-full px-3 py-1.5 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded-lg text-sm text-slate-950 dark:text-white" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] text-slate-500">ค่าศูนย์ดาราศาสตร์ / เทอม (บาท)</label>
+                                            <input type="text" id="setFeesPrimaryAstro" class="w-full px-3 py-1.5 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded-lg text-sm text-slate-950 dark:text-white" required>
+                                        </div>
+                                    </div>
+                                    <!-- Junior High rates -->
+                                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-3">
+                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">มัธยมต้น (ม.1-3)</span>
+                                        <div>
+                                            <label class="block text-[11px] text-slate-500">ค่าเล่าเรียน / เทอม (บาท)</label>
+                                            <input type="text" id="setFeesJuniorTuition" class="w-full px-3 py-1.5 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded-lg text-sm text-slate-950 dark:text-white" required>
+                                        </div>
+                                        <div class="hidden">
+                                            <label class="block text-[11px] text-slate-500">ค่ากิจกรรม / ปี (บาท)</label>
+                                            <input type="text" id="setFeesJuniorActivities" class="w-full px-3 py-1.5 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded-lg text-sm text-slate-950 dark:text-white" value="0" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] text-slate-500">ค่าศูนย์ดาราศาสตร์ / เทอม (บาท)</label>
+                                            <input type="text" id="setFeesJuniorAstro" class="w-full px-3 py-1.5 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded-lg text-sm text-slate-950 dark:text-white" required>
+                                        </div>
+                                    </div>
+                                    <!-- Senior High rates -->
+                                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-3">
+                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">มัธยมปลาย (ม.4-6)</span>
+                                        <div>
+                                            <label class="block text-[11px] text-slate-500">ค่าเล่าเรียน / เทอม (บาท)</label>
+                                            <input type="text" id="setFeesSeniorTuition" class="w-full px-3 py-1.5 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded-lg text-sm text-slate-950 dark:text-white" required>
+                                        </div>
+                                        <div class="hidden">
+                                            <label class="block text-[11px] text-slate-500">ค่ากิจกรรม / ปี (บาท)</label>
+                                            <input type="text" id="setFeesSeniorActivities" class="w-full px-3 py-1.5 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded-lg text-sm text-slate-950 dark:text-white" value="0" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] text-slate-500">ค่าศูนย์ดาราศาสตร์ / เทอม (บาท)</label>
+                                            <input type="text" id="setFeesSeniorAstro" class="w-full px-3 py-1.5 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded-lg text-sm text-slate-950 dark:text-white" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- About History Section -->
+                            <div class="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                                <h3 class="text-sm font-extrabold text-emerald-600 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-1">📝 คำเกริ่นและประวัติความเป็นมา (Timeline)</h3>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">ข้อความแนะนำโครงการภาษาไทย</label>
+                                    <textarea id="setAboutIntroTh" rows="2" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm" required></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">ข้อความแนะนำโครงการภาษาอังกฤษ</label>
+                                    <textarea id="setAboutIntroEn" rows="2" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm" required></textarea>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-355">รายการประวัติไทม์ไลน์ (Timeline Events)</span>
+                                        <button type="button" onclick="addTimelineRow()" class="px-3 py-1 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded text-[11px] font-bold transition">➕ เพิ่มช่วงเวลาประวัติ</button>
+                                    </div>
+                                    <div class="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-950 p-4">
+                                        <div class="space-y-3" id="timeline-list-container">
+                                            <!-- Dynamically generated timeline rows -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition shadow-sm">
+                                💾 บันทึกเนื้อหาเว็บไซต์ทั้งหมด
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 6. SECURITY & PASSWORD TAB -->
+                <div id="admin-tab-security" class="space-y-6 hidden">
+                    <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm">
+                        <div class="space-y-2 border-b border-slate-100 dark:border-slate-800 pb-5 mb-6">
+                            <h2 class="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
+                                <span>🔐</span>
+                                <span>ความปลอดภัยและรหัสผ่านผู้ดูแลระบบ</span>
+                            </h2>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                                จัดการรหัสผ่านสำหรับเข้าสู่ระบบหลังบ้านของโครงการฯ ภาคภาษาอังกฤษ โรงเรียนชลประทานวิทยา
+                            </p>
+                        </div>
+
+                        <!-- Password Change Form -->
+                        <div class="max-w-xl space-y-6">
+                            <div id="pwdAlertBox" class="hidden p-4 rounded-2xl text-xs font-bold"></div>
+
+                            <form id="changePasswordForm" onsubmit="handleChangePassword(event)" class="space-y-4">
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">รหัสผ่านปัจจุบัน (Current Password)</label>
+                                    <input type="password" id="currentPassword" required placeholder="กรอกรหัสผ่านเดิม"
+                                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm">
+                                </div>
+
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">รหัสผ่านใหม่ (New Password)</label>
+                                    <input type="password" id="newPassword" required minlength="6" placeholder="ความยาวอย่างน้อย 6 ตัวอักษร"
+                                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm">
+                                </div>
+
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">ยืนยันรหัสผ่านใหม่ (Confirm New Password)</label>
+                                    <input type="password" id="confirmPassword" required minlength="6" placeholder="กรอกรหัสผ่านใหม่อีกครั้งให้ตรงกัน"
+                                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm">
+                                </div>
+
+                                <div class="pt-2">
+                                    <button type="submit" id="btnSubmitPassword"
+                                        class="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-2">
+                                        <span>💾</span>
+                                        <span>บันทึกรหัสผ่านใหม่</span>
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Security Notes Box -->
+                            <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 space-y-2 bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl">
+                                <h4 class="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                    <span>🛡️</span>
+                                    <span>มาตรการความปลอดภัยของระบบ:</span>
+                                </h4>
+                                <ul class="list-disc pl-5 space-y-1 text-[11px] leading-relaxed">
+                                    <li>รหัสผ่านถูกเข้ารหัสด้วยฟังก์ชันแฮชทางเดียว <strong>Bcrypt</strong> มาตรฐานความปลอดภัยระดับสากล</li>
+                                    <li>มีระบบป้องกันการสุ่มรหัสผ่าน (Brute-Force Protection) ระงับการเข้าใช้งานอัตโนมัติหากใส่ผิดเกิน 5 ครั้ง</li>
+                                    <li>เซสชันจะหมดอายุอัตโนมัติเมื่อไม่มีการเคลื่อนไหวเกิน 4 ชั่วโมง</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Maintenance & Gateway Settings Card -->
+                    <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm">
+                        <div class="space-y-2 border-b border-slate-100 dark:border-slate-800 pb-5 mb-6">
+                            <h2 class="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
+                                <span>🌐</span>
+                                <span>ตั้งค่าการเปิด-ปิดเว็บไซต์และส่งต่อไปยัง Facebook</span>
+                            </h2>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                                ควบคุมว่าเมื่อคนทั่วไปกดลิงก์จากหน้าเว็บหลักของโรงเรียน จะให้เข้าสู่หน้าเว็บใหม่ หรือส่งต่อไปยังเพจ Facebook เดิม
+                            </p>
+                        </div>
+
+                        <div id="maintAlertBox" class="hidden p-4 rounded-2xl text-xs font-bold mb-4"></div>
+
+                        <form id="maintSettingsForm" onsubmit="handleSaveMaintenanceSettings(event)" class="max-w-xl space-y-5">
+                            <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" id="maint_enabled" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500" <?php echo $isMaintActive ? 'checked' : ''; ?>>
+                                    <span class="text-sm font-bold text-slate-900 dark:text-white">เปิดใช้งานโหมดปิดปรับปรุง (ซ่อนเว็บไซต์จากบุคคลภายนอก)</span>
+                                </label>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 pl-8">
+                                    หากเปิดโหมดนี้ บุคคลภายนอกจะไม่สามารถดูเนื้อหาหน้าเว็บได้ แต่แอดมินที่ล็อกอินอยู่จะดูและตรวจทานได้ตามปกติ
+                                </p>
+                            </div>
+
+                            <div class="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 space-y-3">
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" id="maint_redirect_fb" class="w-5 h-5 rounded text-blue-600 focus:ring-blue-500" <?php echo $isRedirectFb ? 'checked' : ''; ?>>
+                                    <span class="text-sm font-bold text-blue-950 dark:text-blue-200">ส่งต่อผู้เข้าชมไปยัง Facebook โครงการ EP อัตโนมัติ (แนะนำ ⭐)</span>
+                                </label>
+                                <p class="text-xs text-blue-800/80 dark:text-blue-300/80 pl-8">
+                                    เมื่อเปิดใช้งาน คนที่กดมาจากเว็บหลักโรงเรียนจะวิ่งไปยังหน้า Facebook เพจ EP ทันทีโดยไม่สะดุด
+                                </p>
+                                <div class="pl-8 pt-1">
+                                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">ลิงก์ Facebook โครงการ EP</label>
+                                    <input type="url" id="maint_fb_url" value="<?php echo htmlspecialchars($mConfig['facebook_url'] ?? 'https://www.facebook.com/profile.php?id=100093686707861', ENT_QUOTES, 'UTF-8'); ?>"
+                                        class="w-full px-4 py-2 bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs focus:outline-none focus:border-brand-500">
+                                </div>
+                            </div>
+
+                            <div class="pt-2">
+                                <button type="submit" id="btnSaveMaintSettings"
+                                    class="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-2">
+                                    <span>💾</span>
+                                    <span>บันทึกการตั้งค่าการเผยแพร่</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <?php include 'footer.php'; ?>
+
+    <?php include 'login_modal.php'; ?>
+
+
+
+    <!-- ADD/EDIT STAFF FORM MODAL -->
+    <div id="staffFormModal" class="fixed inset-0 z-50 overflow-y-auto hidden flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+        <div class="relative bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6">
+            <button onclick="closeStaffFormModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white text-2xl font-bold transition">&times;</button>
+            <div class="text-center">
+                <h3 class="text-2xl font-black text-slate-950 dark:text-white" id="modalStaffFormTitle">เพิ่มบุคลากรใหม่</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">กรอกข้อมูลครูเพื่ออัปเดตระบบฐานข้อมูล</p>
+            </div>
+            <form id="staffForm" onsubmit="handleStaffFormSubmit(event)" class="space-y-4 text-sm font-semibold">
+                <input type="hidden" id="staffIndex">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">ชื่อ-นามสกุล (ภาษาไทย)</label>
+                        <input type="text" id="staffName" required placeholder="เช่น ครูสมชาย ใจดี" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Name-Surname (English)</label>
+                        <input type="text" id="staffNameEn" required placeholder="e.g. Teacher Somchai Jaidee" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">ตำแหน่ง (ภาษาไทย)</label>
+                        <input type="text" id="staffRole" required placeholder="เช่น ครูประจำชั้น ม.1/11" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Role / Position (English)</label>
+                        <input type="text" id="staffRoleEn" required placeholder="e.g. Homeroom Teacher M.1/11" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">หมวดหมู่</label>
+                        <select id="staffCategory" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                            <option value="admin">
+                                ร</option>
+                            <option value="primary">ครูระดับประถม</option>
+                            <option value="secondary">ครูระดับมัธยม</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">ครูต่างชาติ?</label>
+                        <select id="staffIsForeign" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                            <option value="false">ไม่ใช่ (ครูไทย)</option>
+                            <option value="true">ใช่ (Foreign Teacher)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">ห้องเรียน/ห้องทำงาน</label>
+                        <input type="text" id="staffClassroom" required placeholder="เช่น ห้องเรียน ป.1/14" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Classroom (English)</label>
+                        <input type="text" id="staffClassroomEn" required placeholder="e.g. Classroom P.1/14" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">ลิงก์รูปภาพ (Image URL)</label>
+                        <input type="text" id="staffImageUrl" placeholder="https://images.unsplash.com/..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">วิชาที่สอน (ภาษาไทย - คั่นด้วย ,)</label>
+                        <input type="text" id="staffSubjects" placeholder="ภาษาไทย, ศิลปะ" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Subjects Taught (English - separated by ,)</label>
+                        <input type="text" id="staffSubjectsEn" placeholder="Thai Language, Arts" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 pt-2">
+                    <button type="button" onclick="closeStaffFormModal()" class="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">ยกเลิก</button>
+                    <button type="submit" class="flex-1 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold transition">บันทึกข้อมูลบุคลากร</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT SLIDES FORM MODAL WITH PHOTO PICKER -->
+    <div id="slidesFormModal" class="fixed inset-0 z-50 overflow-y-auto hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+        <div class="relative bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeSlidesFormModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white text-2xl font-bold transition">&times;</button>
+            
+            <div class="text-center space-y-1">
+                <h3 class="text-2xl font-black text-slate-950 dark:text-white" id="modalSlidesFormTitle">จัดการสไลด์หน้าแรก</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">เลือกภาพกิจกรรมของโครงการ EP หรือใส่ลิงก์รูปภาพที่ต้องการ</p>
+            </div>
+
+            <!-- 1-Click Preset Template Buttons -->
+            <div class="bg-blue-50/50 dark:bg-slate-850 border border-blue-100 dark:border-slate-800 rounded-2xl p-3.5 space-y-2">
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300 block">⚡ เลือกชุดเทมเพลตสำเร็จรูป (1-Click Presets):</span>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="applySlidePreset('openhouse')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-brand-500 text-xs font-bold text-slate-700 dark:text-slate-200 transition shadow-sm">🌟 Open House</button>
+                    <button type="button" onclick="applySlidePreset('spellingbee')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-brand-500 text-xs font-bold text-slate-700 dark:text-slate-200 transition shadow-sm">🏆 Spelling Bee</button>
+                    <button type="button" onclick="applySlidePreset('cursive')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-brand-500 text-xs font-bold text-slate-700 dark:text-slate-200 transition shadow-sm">✍️ Cursive Writing</button>
+                    <button type="button" onclick="applySlidePreset('admissions')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-brand-500 text-xs font-bold text-slate-700 dark:text-slate-200 transition shadow-sm">📢 รับสมัครปี 2570</button>
+                </div>
+            </div>
+
+            <!-- Visual EP Photo Library (คลังภาพกิจกรรม EP ให้กดเลือกได้ทันที) -->
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">📸 คลังภาพกิจกรรมโครงการ EP (คลิกที่รูปเพื่อเลือกใช้ทันที):</label>
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-48 overflow-y-auto p-2 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <!-- Photo 1: Open House 4K -->
+                    <div onclick="selectPhotoForSlide('https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114421_290234.jpg', 'Open House & อาคารเรียน EP')" class="group relative cursor-pointer rounded-xl overflow-hidden border-2 border-transparent hover:border-brand-500 aspect-video shadow-sm transition">
+                        <img src="https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114421_290234.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="EP Open House">
+                        <span class="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">Open House 4K</span>
+                    </div>
+                    <!-- Photo 2: Spelling Bee 2K -->
+                    <div onclick="selectPhotoForSlide('https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260826141342/32026082614134220260826142252_444095.jpg', 'Spelling Bee 2026')" class="group relative cursor-pointer rounded-xl overflow-hidden border-2 border-transparent hover:border-brand-500 aspect-video shadow-sm transition">
+                        <img src="https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260826141342/32026082614134220260826142252_444095.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="Spelling Bee">
+                        <span class="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">Spelling Bee</span>
+                    </div>
+                    <!-- Photo 3: Cursive Writing 2K -->
+                    <div onclick="selectPhotoForSlide('https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260803161101/32026080316110120260803161147_668274.jpg', 'Cursive Writing Contest')" class="group relative cursor-pointer rounded-xl overflow-hidden border-2 border-transparent hover:border-brand-500 aspect-video shadow-sm transition">
+                        <img src="https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260803161101/32026080316110120260803161147_668274.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="Cursive Writing">
+                        <span class="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">Cursive Writing</span>
+                    </div>
+                    <!-- Photo 4: Admissions & Campus Showcase -->
+                    <div onclick="selectPhotoForSlide('https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114424_685193.jpg', 'Campus Showcase')" class="group relative cursor-pointer rounded-xl overflow-hidden border-2 border-transparent hover:border-brand-500 aspect-video shadow-sm transition">
+                        <img src="https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114424_685193.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="Campus Showcase">
+                        <span class="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">Admissions 4K</span>
+                    </div>
+                    <!-- Photo 5: Scrabble 2027 -->
+                    <div onclick="selectPhotoForSlide('https://app.cpw.ac.th/cpw_api_content/images/activities/3202608250743421069083217.jpg', 'Scrabble Competition')" class="group relative cursor-pointer rounded-xl overflow-hidden border-2 border-transparent hover:border-brand-500 aspect-video shadow-sm transition">
+                        <img src="https://app.cpw.ac.th/cpw_api_content/images/activities/3202608250743421069083217.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="Scrabble Competition">
+                        <span class="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">Scrabble EP</span>
+                    </div>
+                    <!-- Photo 6: Singing Contest -->
+                    <div onclick="selectPhotoForSlide('https://app.cpw.ac.th/cpw_api_content/images/activities/3202608181253422031180506.jpg', 'Singing Competition')" class="group relative cursor-pointer rounded-xl overflow-hidden border-2 border-transparent hover:border-brand-500 aspect-video shadow-sm transition">
+                        <img src="https://app.cpw.ac.th/cpw_api_content/images/activities/3202608181253422031180506.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="Singing Contest">
+                        <span class="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">Singing Contest</span>
+                    </div>
+                    <!-- Photo 7: Real EP Architecture Cover -->
+                    <div onclick="selectPhotoForSlide('img/ep_cover_banner.jpg', 'EP Building Architecture')" class="group relative cursor-pointer rounded-xl overflow-hidden border-2 border-transparent hover:border-brand-500 aspect-video shadow-sm transition">
+                        <img src="img/ep_cover_banner.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="EP Building">
+                        <span class="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">อาคารเรียน EP</span>
+                    </div>
+                    <!-- Photo 8: Real EP Office Lobby -->
+                    <div onclick="selectPhotoForSlide('img/ep_bot_lobby_bg.jpg', 'EP Office Lobby')" class="group relative cursor-pointer rounded-xl overflow-hidden border-2 border-transparent hover:border-brand-500 aspect-video shadow-sm transition">
+                        <img src="img/ep_bot_lobby_bg.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="EP Office">
+                        <span class="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">Lobby / Office</span>
+                    </div>
+                </div>
+            </div>
+
+            <form id="slidesForm" onsubmit="handleSlidesFormSubmit(event)" class="space-y-4 text-sm font-semibold">
+                <input type="hidden" id="slideIndex">
+                
+                <!-- Image URL Input & Live Preview Box -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">ลิงก์รูปภาพพื้นหลัง (Image URL)</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="slideImageUrl" oninput="updateSlidePreviewImage(this.value)" required placeholder="https://..." class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                    <!-- Live Preview Box -->
+                    <div id="slideImagePreviewBox" class="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 h-36 bg-slate-950 flex items-center justify-center">
+                        <img id="slidePreviewImg" src="https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114421_290234.jpg" class="w-full h-full object-cover" alt="Slide Preview">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-3">
+                            <span class="text-[11px] text-slate-350 font-normal">ตัวอย่างภาพพื้นหลังสไลด์</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">ป้ายกำกับ (TH)</label>
+                        <input type="text" id="slideBadge" required placeholder="เช่น 🌟 English Program CPW" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Badge (EN)</label>
+                        <input type="text" id="slideBadgeEn" required placeholder="e.g. 🌟 English Program CPW" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">หัวข้อสไลด์ (ภาษาไทย)</label>
+                    <input type="text" id="slideTitle" required placeholder="หัวข้อตัวใหญ่บนหน้าแรก" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">หัวข้อสไลด์ (ภาษาอังกฤษ) / Title (English)</label>
+                    <input type="text" id="slideTitleEn" required placeholder="Title on home page" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">คำอธิบายย่อย (ภาษาไทย)</label>
+                    <textarea id="slideDescription" rows="2" placeholder="รายละเอียดเนื้อหาสไลด์สั้นๆ..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">คำอธิบายย่อย (ภาษาอังกฤษ) / Description (English)</label>
+                    <textarea id="slideDescriptionEn" rows="2" placeholder="Brief description..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition"></textarea>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">ข้อความปุ่ม 1</label>
+                        <input type="text" id="slideBtn1Text" placeholder="เช่น ดูหลักสูตร" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Button 1 Text (EN)</label>
+                        <input type="text" id="slideBtn1TextEn" placeholder="e.g. View Curriculum" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">ลิงก์ปุ่ม 1 (Link)</label>
+                        <input type="text" id="slideBtn1Link" placeholder="เช่น curriculum.php" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">ข้อความปุ่ม 2</label>
+                        <input type="text" id="slideBtn2Text" placeholder="เช่น ติดต่อสอบถาม" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Button 2 Text (EN)</label>
+                        <input type="text" id="slideBtn2TextEn" placeholder="e.g. Contact Us" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">ลิงก์ปุ่ม 2 (Link)</label>
+                        <input type="text" id="slideBtn2Link" placeholder="เช่น contact.php" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 pt-2">
+                    <button type="button" onclick="closeSlidesFormModal()" class="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">ยกเลิก</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT สำหรับหลังบ้านแอดมินโดยเฉพาะ -->
+    <script>
+        let adminNewsList = [];
+        let adminActivitiesList = [];
+        let adminStaffList = [];
+        let adminSlidesList = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const isRealApi = localStorage.getItem('cpw_use_real_api') === 'true';
+
+            const statApiStatus = document.getElementById('stat-api-status');
+            if (statApiStatus) {
+                statApiStatus.innerText = isRealApi ? "โหมดดึงข้อมูลโรงเรียนจริง" : "โหมดจำลองถิ่นฐาน";
+                statApiStatus.className = isRealApi 
+                    ? "block text-xs font-bold text-emerald-500" 
+                    : "block text-xs font-bold text-amber-500";
+            }
+
+            // ดึงประกาศข่าวสาร บุคลากร และภาพสไลด์แนะนำมาแสดงในตาราง
+            refreshAdminNewsList();
+            refreshAdminStaffList();
+            refreshAdminSlidesList();
+
+            // ดึงข้อมูลกิจกรรมเก็บไว้สำหรับผูกกับสไลด์
+            fetch('data/db_activities.json?v=' + Date.now())
+                .then(res => res.json())
+                .then(data => {
+                    adminActivitiesList = data;
+                })
+                .catch(err => console.warn("Failed to load activities for slides mapping:", err));
+
+            // โหลดข้อมูลตั้งค่าเนื้อหาเว็บ
+            loadSiteSettings();
+        });
+
+        // สลับแท็บแผงควบคุมหลังบ้าน
+        function switchAdminTab(tabId) {
+            const tabs = ['dashboard', 'tour', 'news', 'staff', 'slides', 'settings', 'site_settings', 'security'];
+            tabs.forEach(id => {
+                const el = document.getElementById(`admin-tab-${id}`);
+                const btn = document.getElementById(`btn-admin-${id}`);
+                if (el) el.classList.add('hidden');
+                if (btn) btn.className = "w-full text-left px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition flex items-center justify-between";
+            });
+            const activeEl = document.getElementById(`admin-tab-${tabId}`);
+            const activeBtn = document.getElementById(`btn-admin-${tabId}`);
+            if (activeEl) activeEl.classList.remove('hidden');
+            if (activeBtn) activeBtn.className = "w-full text-left px-4 py-2.5 rounded-xl bg-brand-500 text-white transition flex items-center justify-between";
+
+            if (tabId === 'tour') {
+                loadTourBookings();
+            }
+        }
+
+        // จัดการเปลี่ยนรหัสผ่านผู้ดูแลระบบ
+        async function handleChangePassword(e) {
+            e.preventDefault();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const alertBox = document.getElementById('pwdAlertBox');
+            const btn = document.getElementById('btnSubmitPassword');
+
+            if (newPassword !== confirmPassword) {
+                alertBox.className = "p-4 rounded-2xl text-xs font-bold bg-red-500/10 border border-red-500/30 text-red-500 block";
+                alertBox.innerText = "⚠️ รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = "⏳ กำลังบันทึกรหัสผ่านใหม่...";
+
+            try {
+                const res = await fetch('auth_action.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': window.csrfToken || ''
+                    },
+                    body: JSON.stringify({
+                        action: 'change_password',
+                        current_password: currentPassword,
+                        new_password: newPassword,
+                        confirm_password: confirmPassword
+                    })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alertBox.className = "p-4 rounded-2xl text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 block";
+                    alertBox.innerText = "✅ " + result.message;
+                    document.getElementById('changePasswordForm').reset();
+                    const warningBanner = document.getElementById('security-warning-banner');
+                    if (warningBanner) warningBanner.remove();
+                    const warningBadge = document.querySelector('#btn-admin-security span:last-child');
+                    if (warningBadge && warningBadge.textContent.includes('ควรเปลี่ยนรหัส')) warningBadge.remove();
+                } else {
+                    alertBox.className = "p-4 rounded-2xl text-xs font-bold bg-red-500/10 border border-red-500/30 text-red-500 block";
+                    alertBox.innerText = "❌ " + result.message;
+                }
+            } catch (err) {
+                alertBox.className = "p-4 rounded-2xl text-xs font-bold bg-red-500/10 border border-red-500/30 text-red-500 block";
+                alertBox.innerText = "❌ เกิดข้อผิดพลาดในการเชื่อมต่อ: " + err.message;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "<span>💾</span> <span>บันทึกรหัสผ่านใหม่</span>";
+            }
+        }
+
+        // จัดการสลับโหมดเผยแพร่เว็บไซต์ / ส่งไป Facebook
+        let isMaintenanceActive = "<?php echo !empty($isMaintActive) ? '1' : '0'; ?>" === '1';
+
+        // สั่งอัปเดต UI ให้ตรงกับสถานะทันทีเมื่อโหลดสคริปต์
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof updateMaintenanceUI === 'function') {
+                updateMaintenanceUI({ enabled: isMaintenanceActive });
+            }
+        });
+
+        async function toggleMaintenanceMode() {
+            const btn = document.getElementById('btnToggleMaint');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = "⏳ กำลังสลับสถานะ...";
+
+            try {
+                const res = await fetch('auth_action.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': window.csrfToken || ''
+                    },
+                    body: JSON.stringify({
+                        action: 'toggle_maintenance',
+                        enabled: !isMaintenanceActive
+                    })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    isMaintenanceActive = result.config.enabled;
+                    updateMaintenanceUI(result.config);
+                    alert("✅ " + result.message);
+                } else {
+                    alert("❌ " + result.message);
+                }
+            } catch (err) {
+                alert("❌ การเชื่อมต่อล้มเหลว: " + err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function updateMaintenanceUI(config) {
+            const card = document.getElementById('maintenance-status-card');
+            const icon = document.getElementById('maint-icon');
+            const badge = document.getElementById('maint-badge');
+            const desc = document.getElementById('maint-desc');
+            const btn = document.getElementById('btnToggleMaint');
+            const btnIcon = document.getElementById('btnToggleMaintIcon');
+            const btnText = document.getElementById('btnToggleMaintText');
+            const chkEnabled = document.getElementById('maint_enabled');
+
+            if (config.enabled) {
+                if (card) card.className = "rounded-3xl p-6 border transition-all duration-300 bg-amber-500/10 border-amber-500/30";
+                if (icon) icon.innerText = "🔒";
+                if (badge) {
+                    badge.className = "text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-amber-500 text-slate-950";
+                    badge.innerText = "🚧 ปิดปรับปรุง (ส่งไป Facebook)";
+                }
+                if (desc) desc.innerHTML = "บุคคลภายนอกที่คลิกมาจากเว็บโรงเรียนจะถูก <strong>ส่งต่อไปยัง Facebook เพจ EP อัตโนมัติ</strong> (เฉพาะแอดมินที่ล็อกอินเท่านั้นที่ดูเว็บนี้ได้)";
+                if (btn) btn.className = "px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-sm flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white";
+                if (btnIcon) btnIcon.innerText = "🚀";
+                if (btnText) btnText.innerText = "กดเปิดเว็บไซต์สู่สาธารณะ";
+                if (chkEnabled) chkEnabled.checked = true;
+            } else {
+                if (card) card.className = "rounded-3xl p-6 border transition-all duration-300 bg-emerald-500/10 border-emerald-500/30";
+                if (icon) icon.innerText = "🌐";
+                if (badge) {
+                    badge.className = "text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-500 text-white";
+                    badge.innerText = "🟢 ออนไลน์สู่สาธารณะ (Live)";
+                }
+                if (desc) desc.innerText = "เปิดให้ทุกคนเข้าชมเว็บไซต์โครงการ EP ตัวจริงได้ตามปกติ";
+                if (btn) btn.className = "px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-sm flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950";
+                if (btnIcon) btnIcon.innerText = "🔒";
+                if (btnText) btnText.innerText = "กดสลับเป็นส่งไป Facebook";
+                if (chkEnabled) chkEnabled.checked = false;
+            }
+        }
+
+        async function handleSaveMaintenanceSettings(e) {
+            e.preventDefault();
+            const enabled = document.getElementById('maint_enabled').checked;
+            const redirectFb = document.getElementById('maint_redirect_fb').checked;
+            const fbUrl = document.getElementById('maint_fb_url').value;
+            const alertBox = document.getElementById('maintAlertBox');
+            const btn = document.getElementById('btnSaveMaintSettings');
+
+            btn.disabled = true;
+            btn.innerHTML = "⏳ กำลังบันทึก...";
+
+            try {
+                const res = await fetch('auth_action.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': window.csrfToken || ''
+                    },
+                    body: JSON.stringify({
+                        action: 'toggle_maintenance',
+                        enabled: enabled,
+                        redirect_to_facebook: redirectFb,
+                        facebook_url: fbUrl
+                    })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    isMaintenanceActive = result.config.enabled;
+                    updateMaintenanceUI(result.config);
+                    alertBox.className = "p-4 rounded-2xl text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 block mb-4";
+                    alertBox.innerText = "✅ บันทึกการตั้งค่าการเผยแพร่เรียบร้อยแล้ว";
+                } else {
+                    alertBox.className = "p-4 rounded-2xl text-xs font-bold bg-red-500/10 border border-red-500/30 text-red-500 block mb-4";
+                    alertBox.innerText = "❌ " + result.message;
+                }
+            } catch (err) {
+                alertBox.className = "p-4 rounded-2xl text-xs font-bold bg-red-500/10 border border-red-500/30 text-red-500 block mb-4";
+                alertBox.innerText = "❌ การเชื่อมต่อล้มเหลว: " + err.message;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "<span>💾</span> <span>บันทึกการตั้งค่าการเผยแพร่</span>";
+            }
+        }
+
+        // ซิงค์ข้อมูลบุคลากรผ่านหลังบ้าน
+        async function triggerBackendSync() {
+            const btn = document.getElementById('btn-sync-staff');
+            if (!btn) return;
+            const originalText = btn.innerHTML;
+            
+            // Confirm action first
+            if (!confirm("คุณต้องการดึงข้อมูลรายชื่อใหม่จากระบบโรงเรียน (cpw.ac.th) และ Google Sheet ใช่หรือไม่?\n(รูปถ่ายจะประมวลผลจากโฟลเดอร์ raw ในเครื่องเท่านั้น)")) {
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '⏳ กำลังซิงค์ข้อมูล...';
+            
+            try {
+                const resp = await fetch('run_sync.php', { method: 'POST' });
+                const result = await resp.json();
+                if (result.success) {
+                    alert("✅ ซิงค์ข้อมูลบุคลากรและประมวลผลรูปภาพเสร็จสิ้น!");
+                    refreshAdminStaffList();
+                } else {
+                    alert("❌ ซิงค์ข้อมูลล้มเหลว: " + result.message);
+                }
+            } catch (e) {
+                alert("❌ เกิดข้อผิดพลาดทางเทคนิค: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // ซิงค์ข้อมูลประกาศข่าวสารและกิจกรรมผ่านหลังบ้าน
+        async function triggerNewsSync() {
+            const btn = document.getElementById('btn-sync-news');
+            if (!btn) return;
+            const originalText = btn.innerHTML;
+
+            if (!confirm("คุณต้องการดึงข้อมูลข่าวประกาศและภาพกิจกรรมล่าสุดจากเว็บไซต์หลักของโรงเรียนใช่หรือไม่?")) {
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '⏳ กำลังซิงค์ข่าวสาร...';
+
+            try {
+                const resp = await fetch('run_sync_news.php', { method: 'POST' });
+                const result = await resp.json();
+                if (result.success) {
+                    alert("✅ " + result.message);
+                    refreshAdminNewsList();
+                    // trigger static preview recompilation as well
+                    fetch('save_inline.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ file: 'index.php', edits: {} })
+                    });
+                } else {
+                    alert("❌ ซิงค์ข้อมูลล้มเหลว: " + result.message);
+                }
+            } catch (e) {
+                alert("❌ เกิดข้อผิดพลาดทางเทคนิค: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // ซิงค์ข้อมูลโครงสร้างเว็บและค่าเทอมจาก Google Sheet
+        async function triggerSettingsSync() {
+            const btn = document.getElementById('btn-sync-settings');
+            if (!btn) return;
+            const originalText = btn.innerHTML;
+
+            if (!confirm("คุณต้องการซิงค์ข้อมูลโครงสร้าง ค่าธรรมเนียมการศึกษา และหน้าสไลด์แบนเนอร์จาก Google Sheet ใช่หรือไม่?")) {
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '⏳ กำลังซิงค์ข้อมูล...';
+
+            try {
+                const resp = await fetch('run_sync_settings.php', { method: 'POST' });
+                const result = await resp.json();
+                if (result.success) {
+                    alert("✅ " + result.message);
+                    loadSiteSettings(); // รีโหลดข้อมูลในฟอร์มให้แสดงผลล่าสุด
+                    // trigger static preview recompilation
+                    fetch('save_inline.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ file: 'index.php', edits: {} })
+                    }).then(() => {
+                        location.reload(); // รีโหลดหน้าจอเพื่อให้แสดงข้อมูลล่าสุด
+                    });
+                } else {
+                    alert("❌ ซิงค์ข้อมูลล้มเหลว: " + result.message);
+                }
+            } catch (e) {
+                alert("❌ เกิดข้อผิดพลาดทางเทคนิค: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // จัดการตารางข้อมูลข่าวสาร
+        function refreshAdminNewsList() {
+            getDbNews(function(list) {
+                adminNewsList = list;
+                
+                // อัปเดตตัวเลขแผงควบคุม (Stats)
+                document.getElementById('stat-news-count').innerText = adminNewsList.length;
+
+                const tableBody = document.getElementById('news-table-body');
+                if (!tableBody) return;
+                
+                tableBody.innerHTML = '';
+ 
+                if (adminNewsList.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="3" class="px-6 py-8 text-center text-slate-400">📭 ยังไม่มีข่าวประกาศในระบบ</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                adminNewsList.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-50 dark:hover:bg-slate-900/40 transition";
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4">
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-slate-800 text-brand-600 dark:text-blue-400 font-bold">${item.category}</span>
+                        </td>
+                        <td class="px-6 py-4 text-slate-500 font-english">${item.date}</td>
+                        <td class="px-6 py-4 text-slate-900 dark:text-white font-extrabold truncate max-w-xs">${item.title}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            });
+        }
+
+        // จัดการตารางข้อมูลบุคลากร
+        function refreshAdminStaffList() {
+            getDbStaff(function(list) {
+                adminStaffList = list;
+                
+                const tableBody = document.getElementById('staff-table-body');
+                if (!tableBody) return;
+                
+                tableBody.innerHTML = '';
+
+                if (adminStaffList.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-slate-400">📭 ยังไม่มีข้อมูลบุคลากรในระบบ</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                adminStaffList.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-50 dark:hover:bg-slate-900/40 transition";
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-100 bg-cover bg-center border border-slate-200" style="background-image: url('${item.imageUrl || ''}')"></div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <strong class="block text-slate-900 dark:text-white text-xs sm:text-sm">${item.name}</strong>
+                            <span class="text-[11px] text-slate-500 font-english">${item.name_en || ''}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="block text-xs text-slate-800 dark:text-slate-200">${item.role}</span>
+                            <span class="text-[10px] text-slate-500 font-english">${item.role_en || ''}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">${item.classRoom}</span>
+                        </td>
+                        <td class="px-6 py-4 text-center flex items-center justify-center gap-2" style="height: 72px;">
+                            <button onclick="editStaffItem(${index})" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 font-bold text-xs transition">แก้ไข</button>
+                            <button onclick="deleteStaffItem(${index})" class="px-3 py-1 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400 rounded-lg font-bold text-xs transition">ลบ</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            });
+        }
+
+        // --- ตั้งค่าปุ่มสวิทช์ API และเชื่อมต่อจริง ---
+        function toggleApiSetting() {
+            const isChecked = document.getElementById('settingUseRealApi').checked;
+            localStorage.setItem('cpw_use_real_api', isChecked);
+            alert(`🔗 สลับโหมดการเชื่อมข้อมูลเป็น: ${isChecked ? 'ดึงฐานข้อมูลจริง (API)' : 'โหมดจำลองในเครื่อง (LocalStorage)'}`);
+            
+            document.getElementById('stat-api-status').innerText = isChecked ? "โหมดดึงข้อมูลโรงเรียนจริง" : "โหมดจำลองถิ่นฐาน";
+            document.getElementById('stat-api-status').className = isChecked 
+                ? "block text-xs font-bold text-emerald-500" 
+                : "block text-xs font-bold text-amber-500";
+        }
+
+        function saveSettings() {
+            const isChecked = document.getElementById('settingUseRealApi').checked;
+            const apiNews = document.getElementById('apiNewsEndpoint').value;
+            const apiStaff = document.getElementById('apiStaffEndpoint').value;
+            const apiAuth = document.getElementById('apiAuthEndpoint').value;
+
+            localStorage.setItem('cpw_use_real_api', isChecked);
+            localStorage.setItem('cpw_api_news', apiNews);
+            localStorage.setItem('cpw_api_staff', apiStaff);
+            localStorage.setItem('cpw_api_auth', apiAuth);
+
+            alert("✅ บันทึกจุดเชื่อมโยงฐานข้อมูลโรงเรียนสำเร็จ!");
+        }
+
+        // --- ฟังก์ชันสำหรับเพิ่ม/แก้ไข/ลบ และนำเข้าบุคลากร ---
+        function openStaffFormModal() {
+            document.getElementById('staffForm').reset();
+            document.getElementById('staffIndex').value = "";
+            document.getElementById('modalStaffFormTitle').innerText = "เพิ่มบุคลากรใหม่";
+            document.getElementById('staffFormModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeStaffFormModal() {
+            document.getElementById('staffFormModal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function editStaffItem(index) {
+            const item = adminStaffList[index];
+            document.getElementById('staffIndex').value = index;
+            document.getElementById('staffName').value = item.name;
+            document.getElementById('staffNameEn').value = item.name_en || "";
+            document.getElementById('staffRole').value = item.role;
+            document.getElementById('staffRoleEn').value = item.role_en || "";
+            document.getElementById('staffCategory').value = item.category;
+            document.getElementById('staffIsForeign').value = String(item.isForeign);
+            document.getElementById('staffClassroom').value = item.classRoom || "";
+            document.getElementById('staffClassroomEn').value = item.classRoom_en || "";
+            document.getElementById('staffImageUrl').value = item.imageUrl || "";
+            document.getElementById('staffSubjects').value = (item.subjects || []).join(', ');
+            document.getElementById('staffSubjectsEn').value = (item.subjects_en || []).join(', ');
+
+            document.getElementById('modalStaffFormTitle').innerText = "แก้ไขข้อมูลบุคลากร";
+            document.getElementById('staffFormModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function handleStaffFormSubmit(e) {
+            e.preventDefault();
+            const idxStr = document.getElementById('staffIndex').value;
+            const name = document.getElementById('staffName').value;
+            const name_en = document.getElementById('staffNameEn').value;
+            const role = document.getElementById('staffRole').value;
+            const role_en = document.getElementById('staffRoleEn').value;
+            const category = document.getElementById('staffCategory').value;
+            const isForeign = document.getElementById('staffIsForeign').value === 'true';
+            const classRoom = document.getElementById('staffClassroom').value;
+            const classRoom_en = document.getElementById('staffClassroomEn').value;
+            const imageUrl = document.getElementById('staffImageUrl').value;
+            const subjects = document.getElementById('staffSubjects').value.split(',').map(s => s.trim()).filter(s => s);
+            const subjects_en = document.getElementById('staffSubjectsEn').value.split(',').map(s => s.trim()).filter(s => s);
+
+            const newItem = { name, name_en, role, role_en, category, isForeign, classRoom, classRoom_en, imageUrl, subjects, subjects_en };
+
+            if (idxStr === "") {
+                adminStaffList.push(newItem);
+            } else {
+                const index = parseInt(idxStr);
+                adminStaffList[index] = newItem;
+            }
+
+            saveDbStaff(adminStaffList);
+            closeStaffFormModal();
+            refreshAdminStaffList();
+            alert("✅ บันทึกข้อมูลบุคลากรเรียบร้อยครับ!");
+            
+            // สั่งรันคอมไพล์ในเซิร์ฟเวอร์ด้วยผ่านการเรียกเซฟ
+            fetch('save_inline.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    file: 'staff.php',
+                    edits: {} // ส่งเปล่าเพื่อกระตุ้น compile.js
+                })
+            });
+        }
+
+        function deleteStaffItem(index) {
+            if (confirm("⚠️ คุณแน่ใจหรือไม่ที่จะลบข้อมูลบุคลากรคนนี้?")) {
+                adminStaffList.splice(index, 1);
+                saveDbStaff(adminStaffList);
+                refreshAdminStaffList();
+                alert("🗑️ ลบข้อมูลบุคลากรเรียบร้อยครับ");
+                
+                // สั่งรันคอมไพล์
+                fetch('save_inline.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file: 'staff.php', edits: {} })
+                });
+            }
+        }
+
+        // --- นำเข้าข้อมูลจากไฟล์ Excel / CSV ---
+        function handleExcelImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    if (json.length === 0) {
+                        alert("❌ ไม่พบข้อมูลในไฟล์ Excel");
+                        return;
+                    }
+
+                    if (confirm(`📥 ตรวจพบข้อมูลบุคลากรทั้งหมด ${json.length} แถวใน Excel คุณต้องการนำเข้าข้อมูลนี้ใช่หรือไม่?`)) {
+                        const newStaffList = json.map(row => {
+                            const name = row['ชื่อ (ไทย)'] || row['ชื่อ'] || row['name_th'] || row['name'] || '';
+                            const name_en = row['Name (English)'] || row['ชื่อภาษาอังกฤษ'] || row['name_en'] || '';
+                            const role = row['ตำแหน่ง (ไทย)'] || row['ตำแหน่ง'] || row['role_th'] || row['role'] || '';
+                            const role_en = row['Role (English)'] || row['ตำแหน่งภาษาอังกฤษ'] || row['role_en'] || '';
+                            const category = row['หมวดหมู่'] || row['category'] || 'primary';
+                            const isForeignVal = String(row['ครูต่างชาติ'] || row['isForeign'] || 'no').toLowerCase();
+                            const isForeign = isForeignVal === 'yes' || isForeignVal === 'true' || isForeignVal === 'ใช่';
+                            const classRoom = row['ห้องเรียน (ไทย)'] || row['ห้องเรียน'] || row['classroom_th'] || row['classroom'] || '';
+                            const classRoom_en = row['Classroom (English)'] || row['classroom_en'] || '';
+                            const imageUrl = row['รูปภาพ (URL)'] || row['รูปภาพ'] || row['imageUrl'] || '';
+                            
+                            const subjectsRaw = row['วิชาที่สอน (คั่นด้วย ,)'] || row['วิชาที่สอน'] || row['subjects'] || '';
+                            const subjects = subjectsRaw ? String(subjectsRaw).split(',').map(s => s.trim()).filter(s => s) : [];
+                            
+                            const subjectsEnRaw = row['Subjects (คั่นด้วย ,)'] || row['subjects_en'] || '';
+                            const subjects_en = subjectsEnRaw ? String(subjectsEnRaw).split(',').map(s => s.trim()).filter(s => s) : [];
+
+                            return { name, name_en, role, role_en, category, isForeign, classRoom, classRoom_en, imageUrl, subjects, subjects_en };
+                        });
+
+                        adminStaffList = newStaffList;
+                        saveDbStaff(adminStaffList);
+                        refreshAdminStaffList();
+                        alert("✅ นำเข้าข้อมูลคุณครูจาก Excel สำเร็จแล้ว!");
+
+                        // สั่งรันคอมไพล์
+                        fetch('save_inline.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ file: 'staff.php', edits: {} })
+                        }).then(() => {
+                            location.reload();
+                        });
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("❌ เกิดข้อผิดพลาดในการอ่านไฟล์ Excel: " + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- ระบบจัดการสไลด์หน้าแรก ---
+        function refreshAdminSlidesList() {
+            if (typeof getDbSlides === 'function') {
+                getDbSlides(function(list) {
+                    adminSlidesList = list;
+                    
+                    const tableBody = document.getElementById('slides-table-body');
+                    if (!tableBody) return;
+                    
+                    tableBody.innerHTML = '';
+     
+                    if (adminSlidesList.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="5" class="px-6 py-8 text-center text-slate-400">📭 ยังไม่มีสไลด์แนะนำในระบบ</td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
+                    adminSlidesList.forEach((item, index) => {
+                        const row = document.createElement('tr');
+                        row.className = "hover:bg-slate-50 dark:hover:bg-slate-900/40 transition";
+                        
+                        const imgHtml = item.imageUrl 
+                            ? `<img src="${item.imageUrl}" class="w-16 h-10 object-cover rounded-lg shadow-sm">`
+                            : `<div class="w-16 h-10 bg-slate-200 dark:bg-slate-800 flex items-center justify-center rounded-lg text-xs">No Image</div>`;
+
+                        row.innerHTML = `
+                            <td class="px-6 py-4">${imgHtml}</td>
+                            <td class="px-6 py-4">
+                                <span class="block text-xs font-bold text-slate-800 dark:text-slate-200">${item.badge}</span>
+                                <span class="block text-[11px] text-slate-400 font-english">${item.badge_en || ''}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <strong class="block text-slate-900 dark:text-white text-xs">${item.title}</strong>
+                                <span class="block text-[11px] text-slate-400 font-english line-clamp-1">${item.title_en || ''}</span>
+                            </td>
+                            <td class="px-6 py-4 text-center font-bold">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <button onclick="moveSlideItem(${index}, -1)" class="w-6 h-6 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-xs" ${index === 0 ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''}>▲</button>
+                                    <button onclick="moveSlideItem(${index}, 1)" class="w-6 h-6 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-xs" ${index === adminSlidesList.length - 1 ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''}>▼</button>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button onclick="editSlideItem(${index})" class="px-3 py-1 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold transition">แก้ไข</button>
+                                    <button onclick="deleteSlideItem(${index})" class="px-3 py-1 bg-red-50 hover:bg-red-100 dark:bg-red-950 dark:hover:bg-red-900 text-red-600 dark:text-red-400 rounded-lg text-xs font-bold transition">ลบ</button>
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                });
+            }
+        }
+
+        function populateNewsDropdownForSlides() {
+            const selector = document.getElementById('slideNewsSelector');
+            if (!selector) return;
+            
+            selector.innerHTML = '<option value="">-- ดึงข้อมูลจากข่าว/กิจกรรม (กรอกข้อมูลออโต้) --</option>';
+            
+            // Group 1: News
+            if (adminNewsList.length > 0) {
+                const groupNews = document.createElement('optgroup');
+                groupNews.label = "📰 ข่าวประชาสัมพันธ์";
+                adminNewsList.forEach((news, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = `news_${idx}`;
+                    opt.textContent = `[${news.category}] ${news.title.substring(0, 50)}...`;
+                    groupNews.appendChild(opt);
+                });
+                selector.appendChild(groupNews);
+            }
+            
+            // Group 2: Activities
+            if (adminActivitiesList.length > 0) {
+                const groupAct = document.createElement('optgroup');
+                groupAct.label = "📸 ภาพกิจกรรมล่าสุด";
+                adminActivitiesList.forEach((act, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = `act_${idx}`;
+                    opt.textContent = `${act.title.substring(0, 55)}...`;
+                    groupAct.appendChild(opt);
+                });
+                selector.appendChild(groupAct);
+            }
+        }
+
+        function autoPopulateSlideFromNews(val) {
+            if (val === "") return;
+            
+            const parts = val.split('_');
+            const type = parts[0];
+            const idx = parseInt(parts[1]);
+            
+            if (type === 'news') {
+                const newsItem = adminNewsList[idx];
+                if (!newsItem) return;
+
+                document.getElementById('slideBadge').value = "📰 ข่าวประชาสัมพันธ์";
+                document.getElementById('slideBadgeEn').value = "📰 Announcement";
+                
+                document.getElementById('slideTitle').value = newsItem.title || "";
+                document.getElementById('slideTitleEn').value = newsItem.title_en || newsItem.title || "";
+                
+                let cleanDesc = newsItem.content || "";
+                cleanDesc = cleanDesc.replace(/<\/?[^>]+(>|$)/g, "").trim();
+                if (cleanDesc.length > 100) {
+                    cleanDesc = cleanDesc.substring(0, 97) + "...";
+                }
+                document.getElementById('slideDescription').value = cleanDesc;
+
+                let cleanDescEn = newsItem.content_en || "";
+                cleanDescEn = cleanDescEn.replace(/<\/?[^>]+(>|$)/g, "").trim();
+                if (cleanDescEn.length > 100) {
+                    cleanDescEn = cleanDescEn.substring(0, 97) + "...";
+                }
+                document.getElementById('slideDescriptionEn').value = cleanDescEn || cleanDesc;
+
+                document.getElementById('slideImageUrl').value = newsItem.imageUrl || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1600&auto=format&fit=crop&q=80";
+                
+                document.getElementById('slideBtn1Text').value = "อ่านข่าวทั้งหมด";
+                document.getElementById('slideBtn1TextEn').value = "Read More";
+                document.getElementById('slideBtn1Link').value = newsItem.url || "news.php";
+                
+            } else if (type === 'act') {
+                const actItem = adminActivitiesList[idx];
+                if (!actItem) return;
+
+                document.getElementById('slideBadge').value = "📸 ภาพกิจกรรมล่าสุด";
+                document.getElementById('slideBadgeEn').value = "📸 Recent Activities";
+                
+                document.getElementById('slideTitle').value = actItem.title || "";
+                document.getElementById('slideTitleEn').value = actItem.title || "";
+                
+                document.getElementById('slideDescription').value = `รวมประมวลภาพบรรยากาศกิจกรรม: ${actItem.title} เมื่อวันที่ ${actItem.date || '-'}`;
+                document.getElementById('slideDescriptionEn').value = `Photo highlights from: ${actItem.title} on ${actItem.date || '-'}`;
+
+                document.getElementById('slideImageUrl').value = actItem.imageUrl || "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1600&auto=format&fit=crop&q=80";
+                
+                document.getElementById('slideBtn1Text').value = "ดูภาพกิจกรรม";
+                document.getElementById('slideBtn1TextEn').value = "View Photos";
+                document.getElementById('slideBtn1Link').value = "news.php?tab=activities";
+            }
+        }
+
+        function updateSlidePreviewImage(url) {
+            const preview = document.getElementById('slidePreviewImg');
+            if (preview && url) {
+                preview.src = url;
+            }
+        }
+
+        function selectPhotoForSlide(url, label) {
+            document.getElementById('slideImageUrl').value = url;
+            updateSlidePreviewImage(url);
+        }
+
+        function applySlidePreset(presetKey) {
+            if (presetKey === 'openhouse') {
+                document.getElementById('slideImageUrl').value = 'https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114421_290234.jpg';
+                document.getElementById('slideBadge').value = '🌟 English Program CPW';
+                document.getElementById('slideBadgeEn').value = '🌟 English Program CPW';
+                document.getElementById('slideTitle').value = 'ก้าวสู่อนาคตที่เหนือกว่า ด้วยการเรียนรู้สองภาษา';
+                document.getElementById('slideTitleEn').value = 'Step into a Better Future with Bilingual Learning';
+                document.getElementById('slideDescription').value = 'โครงการจัดการเรียนการสอนตามหลักสูตรกระทรวงศึกษาธิการเป็นภาษาอังกฤษ โรงเรียนชลประทานวิทยา มุ่งพัฒนาศักยภาพผู้เรียนสู่ระดับสากล';
+                document.getElementById('slideDescriptionEn').value = 'Chonprathanwittaya School English Program fosters academic excellence and practical English skills to prepare students for global success.';
+                document.getElementById('slideBtn1Text').value = 'ทำความรู้จัก EP';
+                document.getElementById('slideBtn1TextEn').value = 'Get to Know EP';
+                document.getElementById('slideBtn1Link').value = 'about.php';
+                document.getElementById('slideBtn2Text').value = 'ดูโครงสร้างหลักสูตร';
+                document.getElementById('slideBtn2TextEn').value = 'View Curriculum';
+                document.getElementById('slideBtn2Link').value = 'curriculum.php';
+            } else if (presetKey === 'spellingbee') {
+                document.getElementById('slideImageUrl').value = 'https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260826141342/32026082614134220260826142252_444095.jpg';
+                document.getElementById('slideBadge').value = '🏆 Spelling Bee 2026';
+                document.getElementById('slideBadgeEn').value = '🏆 Spelling Bee 2026';
+                document.getElementById('slideTitle').value = 'เวทีความเป็นเลิศทางวิชาการ EP Spelling Bee 2026';
+                document.getElementById('slideTitleEn').value = 'EP Spelling Bee 2026 & Academic Competitions';
+                document.getElementById('slideDescription').value = 'ส่งเสริมทักษะภาษาอังกฤษและความกล้าแสดงออก ผ่านเวทีการแข่งขันสะกดคำภาษาอังกฤษระดับโรงเรียนและระดับประเทศ';
+                document.getElementById('slideDescriptionEn').value = 'Empowering students through nationwide English Spelling Bee and academic competitions.';
+                document.getElementById('slideBtn1Text').value = 'ดูผลงานและความสำเร็จ';
+                document.getElementById('slideBtn1TextEn').value = 'Achievements';
+                document.getElementById('slideBtn1Link').value = '#announcements';
+                document.getElementById('slideBtn2Text').value = 'ทำเนียบคณาจารย์';
+                document.getElementById('slideBtn2TextEn').value = 'Our Faculty';
+                document.getElementById('slideBtn2Link').value = 'staff.php';
+            } else if (presetKey === 'cursive') {
+                document.getElementById('slideImageUrl').value = 'https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260803161101/32026080316110120260803161147_668274.jpg';
+                document.getElementById('slideBadge').value = '✍️ Cursive Writing Competition';
+                document.getElementById('slideBadgeEn').value = '✍️ Cursive Writing Competition';
+                document.getElementById('slideTitle').value = 'ฝึกฝนทักษะรอบด้าน English Program Cursive Writing Contest';
+                document.getElementById('slideTitleEn').value = 'English Program Cursive Writing Competition 2026';
+                document.getElementById('slideDescription').value = 'บ่มเพาะระเบียบวินัยและศิลปะการเขียนภาษาอังกฤษแบบตัวเขียน (Cursive Writing) เพื่อมาตรฐานการสื่อสารระดับสากล';
+                document.getElementById('slideDescriptionEn').value = 'Cultivating elegance, discipline, and penmanship through English Program Cursive Writing competitions.';
+                document.getElementById('slideBtn1Text').value = 'ดูภาพกิจกรรม';
+                document.getElementById('slideBtn1TextEn').value = 'View Activities';
+                document.getElementById('slideBtn1Link').value = '#announcements';
+                document.getElementById('slideBtn2Text').value = 'ดูหลักสูตร ป.1 - ม.6';
+                document.getElementById('slideBtn2TextEn').value = 'Curriculum';
+                document.getElementById('slideBtn2Link').value = 'curriculum.php';
+            } else if (presetKey === 'admissions') {
+                document.getElementById('slideImageUrl').value = 'https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114424_685193.jpg';
+                document.getElementById('slideBadge').value = '📢 Admissions & Campus Tour';
+                document.getElementById('slideBadgeEn').value = '📢 Admissions & Campus Tour';
+                document.getElementById('slideTitle').value = 'เปิดรับสมัครนักเรียนใหม่ โครงการฯ ภาคภาษาอังกฤษ (EP)';
+                document.getElementById('slideTitleEn').value = 'Admissions Open for English Program (EP)';
+                document.getElementById('slideDescription').value = 'เปิดรับสมัครระดับชั้น ป.1, ม.1 และ ม.4 ประจำปีการศึกษา 2570 พร้อมระบบนัดหมายเข้าเยี่ยมชมอาคารเรียนล่วงหน้า';
+                document.getElementById('slideDescriptionEn').value = 'Now accepting applications for Primary (G.1), Junior High (G.7), and Senior High (G.10) for Academic Year 2027 with personalized campus tours.';
+                document.getElementById('slideBtn1Text').value = 'นัดหมายเข้าชมโครงการ';
+                document.getElementById('slideBtn1TextEn').value = 'Book Campus Tour';
+                document.getElementById('slideBtn1Link').value = 'tour.php';
+                document.getElementById('slideBtn2Text').value = 'ตรวจสอบค่าเล่าเรียน';
+                document.getElementById('slideBtn2TextEn').value = 'Check Tuition Fees';
+                document.getElementById('slideBtn2Link').value = 'fees.php';
+            }
+            updateSlidePreviewImage(document.getElementById('slideImageUrl').value);
+        }
+
+        function openSlidesFormModal() {
+            document.getElementById('slideIndex').value = "";
+            document.getElementById('slidesForm').reset();
+            document.getElementById('modalSlidesFormTitle').innerText = "เพิ่มสไลด์แนะนำใหม่";
+            updateSlidePreviewImage('https://app.cpw.ac.th/cpw_api_content/images/activities/2026-08/320260822162040/32026082216204020260824114421_290234.jpg');
+            document.getElementById('slidesFormModal').classList.remove('hidden');
+        }
+
+        function closeSlidesFormModal() {
+            document.getElementById('slidesFormModal').classList.add('hidden');
+        }
+
+        function editSlideItem(index) {
+            const item = adminSlidesList[index];
+            document.getElementById('slideIndex').value = index;
+            document.getElementById('slideImageUrl').value = item.imageUrl || '';
+            updateSlidePreviewImage(item.imageUrl || '');
+            document.getElementById('slideBadge').value = item.badge || '';
+            document.getElementById('slideBadgeEn').value = item.badge_en || '';
+            document.getElementById('slideTitle').value = item.title || '';
+            document.getElementById('slideTitleEn').value = item.title_en || '';
+            document.getElementById('slideDescription').value = item.description || '';
+            document.getElementById('slideDescriptionEn').value = item.description_en || '';
+            document.getElementById('slideBtn1Text').value = item.btn1_text || '';
+            document.getElementById('slideBtn1TextEn').value = item.btn1_text_en || '';
+            document.getElementById('slideBtn1Link').value = item.btn1_link || '';
+            document.getElementById('slideBtn2Text').value = item.btn2_text || '';
+            document.getElementById('slideBtn2TextEn').value = item.btn2_text_en || '';
+            document.getElementById('slideBtn2Link').value = item.btn2_link || '';
+            
+            document.getElementById('modalSlidesFormTitle').innerText = "แก้ไขข้อมูลสไลด์แนะนำ";
+            document.getElementById('slidesFormModal').classList.remove('hidden');
+        }
+
+        function handleSlidesFormSubmit(e) {
+            e.preventDefault();
+            const indexVal = document.getElementById('slideIndex').value;
+            
+            const slideData = {
+                imageUrl: document.getElementById('slideImageUrl').value,
+                badge: document.getElementById('slideBadge').value,
+                badge_en: document.getElementById('slideBadgeEn').value,
+                title: document.getElementById('slideTitle').value,
+                title_en: document.getElementById('slideTitleEn').value,
+                description: document.getElementById('slideDescription').value,
+                description_en: document.getElementById('slideDescriptionEn').value,
+                btn1_text: document.getElementById('slideBtn1Text').value,
+                btn1_text_en: document.getElementById('slideBtn1TextEn').value,
+                btn1_link: document.getElementById('slideBtn1Link').value,
+                btn2_text: document.getElementById('slideBtn2Text').value,
+                btn2_text_en: document.getElementById('slideBtn2TextEn').value,
+                btn2_link: document.getElementById('slideBtn2Link').value
+            };
+
+            if (indexVal === "") {
+                adminSlidesList.push(slideData);
+            } else {
+                adminSlidesList[parseInt(indexVal)] = slideData;
+            }
+
+            saveDbSlides(adminSlidesList);
+            closeSlidesFormModal();
+            refreshAdminSlidesList();
+            
+            // สั่งรันคอมไพล์เพื่อให้ static พรีวิวอัปเดตสไลด์ทันที
+            fetch('save_inline.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ file: 'index.php', edits: {} })
+            }).then(() => {
+                alert("💾 บันทึกการเปลี่ยนแปลงสไลด์แบนเนอร์เรียบร้อยแล้ว!");
+            });
+        }
+
+        function deleteSlideItem(index) {
+            if (confirm("⚠️ คุณแน่ใจหรือไม่ว่าต้องการลบสไลด์นี้ออกจากหน้าแรก?")) {
+                adminSlidesList.splice(index, 1);
+                saveDbSlides(adminSlidesList);
+                refreshAdminSlidesList();
+                
+                fetch('save_inline.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file: 'index.php', edits: {} })
+                });
+            }
+        }
+
+        function moveSlideItem(index, direction) {
+            const targetIdx = index + direction;
+            if (targetIdx < 0 || targetIdx >= adminSlidesList.length) return;
+            
+            // Swap
+            const temp = adminSlidesList[index];
+            adminSlidesList[index] = adminSlidesList[targetIdx];
+            adminSlidesList[targetIdx] = temp;
+            
+            saveDbSlides(adminSlidesList);
+            refreshAdminSlidesList();
+
+            fetch('save_inline.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ file: 'index.php', edits: {} })
+            });
+        }
+
+        // --- ระบบจัดการข้อความและรูปภาพสื่อเว็บไซต์ (CMS Site Settings & Page Media) ---
+        let adminSiteSettings = {};
+
+        function updateMediaPreview(key, val) {
+            const el = document.getElementById('prev_' + key);
+            if (el && val) {
+                el.src = val;
+            }
+        }
+
+        function quickSetMedia(key, val) {
+            const input = document.getElementById('set_' + key);
+            if (input) {
+                input.value = val;
+                updateMediaPreview(key, val);
+            }
+        }
+
+        function uploadMediaFile(inputEl, targetKey) {
+            if (!inputEl.files || inputEl.files.length === 0) return;
+            const file = inputEl.files[0];
+            const formData = new FormData();
+            formData.append('media_file', file);
+
+            const statusEl = document.getElementById('upload_status_' + targetKey);
+            if (statusEl) {
+                statusEl.innerHTML = '<span class="text-blue-600 animate-pulse">⏳ กำลังอัปโหลด...</span>';
+                statusEl.classList.remove('hidden');
+            }
+
+            fetch('save_data.php', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': window.csrfToken || ''
+                },
+                body: formData
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    const inputField = document.getElementById('set_' + targetKey);
+                    if (inputField) {
+                        inputField.value = res.url;
+                    }
+                    updateMediaPreview(targetKey, res.url);
+                    if (statusEl) {
+                        statusEl.innerHTML = '<span class="text-emerald-600 font-bold">✅ อัปโหลดสำเร็จ!</span>';
+                        setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 3500);
+                    }
+                } else {
+                    alert('❌ อัปโหลดไม่สำเร็จ: ' + res.message);
+                    if (statusEl) statusEl.innerHTML = '';
+                }
+            })
+            .catch(err => {
+                alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err);
+                if (statusEl) statusEl.innerHTML = '';
+            });
+        }
+
+        function loadSiteSettings() {
+            fetch('data/db_site_settings.json?v=' + Date.now())
+                .then(res => res.json())
+                .then(data => {
+                    adminSiteSettings = data;
+                    
+                    // Page Media
+                    const mediaKeys = [
+                        'home_primary_img', 'home_junior_img', 'home_senior_img', 'home_showcase_img',
+                        'about_banner_img', 'curriculum_banner_img', 'admission_banner_img',
+                        'fees_banner_img', 'staff_banner_img', 'tour_banner_img', 'contact_banner_img'
+                    ];
+                    if (!data.page_media) data.page_media = {};
+                    mediaKeys.forEach(k => {
+                        const input = document.getElementById('set_' + k);
+                        if (input) {
+                            input.value = data.page_media[k] || '';
+                            updateMediaPreview(k, data.page_media[k] || '');
+                        }
+                    });
+
+                    document.getElementById('setContactPhone').value = data.contact.phone || '';
+                    document.getElementById('setContactEmail').value = data.contact.email || '';
+                    document.getElementById('setContactFacebook').value = data.contact.facebook || '';
+                    document.getElementById('setContactAddressTh').value = data.contact.address_th || '';
+                    document.getElementById('setContactAddressEn').value = data.contact.address_en || '';
+                    
+                    document.getElementById('setFeesPrimaryTuition').value = data.fees.primary.tuition || '';
+                    document.getElementById('setFeesPrimaryActivities').value = data.fees.primary.activities || '';
+                    document.getElementById('setFeesPrimaryFood').value = data.fees.primary.food || '';
+                    document.getElementById('setFeesPrimaryAstro').value = data.fees.primary.astro || '';
+                    
+                    document.getElementById('setFeesJuniorTuition').value = data.fees.junior.tuition || '';
+                    document.getElementById('setFeesJuniorActivities').value = data.fees.junior.activities || '';
+                    document.getElementById('setFeesJuniorAstro').value = data.fees.junior.astro || '';
+                    
+                    document.getElementById('setFeesSeniorTuition').value = data.fees.senior.tuition || '';
+                    document.getElementById('setFeesSeniorActivities').value = data.fees.senior.activities || '';
+                    document.getElementById('setFeesSeniorAstro').value = data.fees.senior.astro || '';
+                    
+                    document.getElementById('setAboutIntroTh').value = data.about.intro_th || '';
+                    document.getElementById('setAboutIntroEn').value = data.about.intro_en || '';
+                    
+                    renderTimelineRows();
+
+                    // Tour booking settings
+                    const tourEnabled = !data.tour_booking || data.tour_booking.enabled !== false;
+                    updateTourStatusUI(tourEnabled);
+                    if (data.tour_booking) {
+                        const titleTh = document.getElementById('tour-closed-title-th');
+                        const titleEn = document.getElementById('tour-closed-title-en');
+                        const msgTh = document.getElementById('tour-closed-msg-th');
+                        if (titleTh) titleTh.value = data.tour_booking.closed_title_th || '';
+                        if (titleEn) titleEn.value = data.tour_booking.closed_title_en || '';
+                        if (msgTh) msgTh.value = data.tour_booking.closed_msg_th || '';
+                    }
+                });
+        }
+
+        function renderTimelineRows() {
+            const container = document.getElementById('timeline-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            if (!adminSiteSettings.about || !adminSiteSettings.about.history || adminSiteSettings.about.history.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีประวัติในระบบ</p>`;
+                return;
+            }
+            
+            adminSiteSettings.about.history.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex flex-col sm:flex-row gap-2.5 items-start p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl relative shadow-sm";
+                div.innerHTML = `
+                    <div class="w-full sm:w-24">
+                        <label class="block text-[10px] text-slate-400 uppercase font-bold">ปี พ.ศ. / ค.ศ.</label>
+                        <input type="text" value="${item.year}" onchange="updateTimelineItem(${idx}, 'year', this.value)" class="w-full px-2.5 py-1.5 border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded text-xs text-slate-950 dark:text-white" required>
+                    </div>
+                    <div class="flex-grow w-full">
+                        <label class="block text-[10px] text-slate-400 uppercase font-bold">หัวข้อประวัติ</label>
+                        <input type="text" value="${item.title}" onchange="updateTimelineItem(${idx}, 'title', this.value)" class="w-full px-2.5 py-1.5 border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded text-xs text-slate-950 dark:text-white" required>
+                    </div>
+                    <div class="flex-grow w-full">
+                        <label class="block text-[10px] text-slate-400 uppercase font-bold">คำอธิบาย</label>
+                        <textarea onchange="updateTimelineItem(${idx}, 'desc', this.value)" class="w-full px-2.5 py-1.5 border border-slate-200 dark:bg-slate-950 dark:border-slate-800 rounded text-xs text-slate-950 dark:text-white" rows="1" required>${item.desc}</textarea>
+                    </div>
+                    <button type="button" onclick="deleteTimelineRow(${idx})" class="absolute sm:static top-2 right-2 text-red-500 hover:text-red-700 font-bold text-xs sm:mt-5 p-1">✕</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function updateTimelineItem(idx, field, value) {
+            adminSiteSettings.about.history[idx][field] = value;
+        }
+        
+        function deleteTimelineRow(idx) {
+            adminSiteSettings.about.history.splice(idx, 1);
+            renderTimelineRows();
+        }
+        
+        function addTimelineRow() {
+            if (!adminSiteSettings.about.history) adminSiteSettings.about.history = [];
+            adminSiteSettings.about.history.push({ year: '2569', title: 'หัวข้อปีใหม่', desc: 'รายละเอียดเหตุการณ์ปีใหม่...' });
+            renderTimelineRows();
+        }
+
+        function handleSiteSettingsSubmit(e) {
+            e.preventDefault();
+            
+            if (!adminSiteSettings.page_media) adminSiteSettings.page_media = {};
+            const mediaKeys = [
+                'home_primary_img', 'home_junior_img', 'home_senior_img', 'home_showcase_img',
+                'about_banner_img', 'curriculum_banner_img', 'admission_banner_img',
+                'fees_banner_img', 'staff_banner_img', 'tour_banner_img', 'contact_banner_img'
+            ];
+            mediaKeys.forEach(k => {
+                const el = document.getElementById('set_' + k);
+                if (el) adminSiteSettings.page_media[k] = el.value;
+            });
+
+            adminSiteSettings.contact.phone = document.getElementById('setContactPhone').value;
+            adminSiteSettings.contact.email = document.getElementById('setContactEmail').value;
+            adminSiteSettings.contact.facebook = document.getElementById('setContactFacebook').value;
+            adminSiteSettings.contact.address_th = document.getElementById('setContactAddressTh').value;
+            adminSiteSettings.contact.address_en = document.getElementById('setContactAddressEn').value;
+            
+            adminSiteSettings.fees.primary.tuition = document.getElementById('setFeesPrimaryTuition').value;
+            adminSiteSettings.fees.primary.activities = document.getElementById('setFeesPrimaryActivities').value;
+            adminSiteSettings.fees.primary.food = document.getElementById('setFeesPrimaryFood').value;
+            adminSiteSettings.fees.primary.astro = document.getElementById('setFeesPrimaryAstro').value;
+            
+            adminSiteSettings.fees.junior.tuition = document.getElementById('setFeesJuniorTuition').value;
+            adminSiteSettings.fees.junior.activities = document.getElementById('setFeesJuniorActivities').value;
+            adminSiteSettings.fees.junior.food = "0";
+            adminSiteSettings.fees.junior.astro = document.getElementById('setFeesJuniorAstro').value;
+            
+            adminSiteSettings.fees.senior.tuition = document.getElementById('setFeesSeniorTuition').value;
+            adminSiteSettings.fees.senior.activities = document.getElementById('setFeesSeniorActivities').value;
+            adminSiteSettings.fees.senior.food = "0";
+            adminSiteSettings.fees.senior.astro = document.getElementById('setFeesSeniorAstro').value;
+            
+            adminSiteSettings.about.intro_th = document.getElementById('setAboutIntroTh').value;
+            adminSiteSettings.about.intro_en = document.getElementById('setAboutIntroEn').value;
+            
+            fetch('save_data.php', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': window.csrfToken || ''
+                },
+                body: JSON.stringify({ type: 'site_settings', data: adminSiteSettings })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    alert("💾 บันทึกเนื้อหาและอัปเดตระบบรูปภาพเว็บไซต์สำเร็จแล้ว!");
+                } else {
+                    alert("❌ บันทึกไม่สำเร็จ: " + res.message);
+                }
+            })
+            .catch(err => {
+                alert("❌ การเชื่อมต่อล้มเหลว: " + err);
+            });
+        }
+
+        // --- ระบบจัดการนัดหมายเข้าชมโครงการ (Campus Tour Bookings & Status) ---
+        function updateTourStatusUI(enabled) {
+            const toggle = document.getElementById('tour-status-toggle');
+            const label = document.getElementById('tour-toggle-label');
+            const badge = document.getElementById('badge-tour-status');
+            const closedBox = document.getElementById('tour-closed-config');
+
+            if (toggle) toggle.checked = !!enabled;
+
+            if (enabled) {
+                if (label) {
+                    label.textContent = 'เปิดรับการนัดหมายตามปกติ';
+                    label.className = 'text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400';
+                }
+                if (badge) {
+                    badge.textContent = 'เปิดรับ';
+                    badge.className = 'text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400';
+                }
+                if (closedBox) closedBox.classList.add('hidden');
+            } else {
+                if (label) {
+                    label.textContent = '🔒 ปิดรับการนัดหมายชั่วคราว';
+                    label.className = 'text-xs font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-400';
+                }
+                if (badge) {
+                    badge.textContent = 'ปิดรับ';
+                    badge.className = 'text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-400';
+                }
+                if (closedBox) closedBox.classList.remove('hidden');
+            }
+        }
+
+        function handleTourToggleChange(checked) {
+            if (!adminSiteSettings.tour_booking) adminSiteSettings.tour_booking = {};
+            adminSiteSettings.tour_booking.enabled = checked;
+            updateTourStatusUI(checked);
+
+            fetch('save_data.php', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': window.csrfToken || ''
+                },
+                body: JSON.stringify({ type: 'site_settings', data: adminSiteSettings })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    const statusText = checked ? "เปิดรับการนัดหมายตามปกติ" : "ปิดรับการนัดหมายชั่วคราว";
+                    alert(`✅ ปรับสถานะระบบนัดหมายเข้าชมโครงการเป็น: ${statusText} เรียบร้อยแล้ว`);
+                } else {
+                    alert("❌ เกิดข้อผิดพลาดในการบันทึกสถานะ: " + res.message);
+                }
+            })
+            .catch(err => alert("❌ เกิดข้อผิดพลาด: " + err));
+        }
+
+        function saveTourClosedConfig() {
+            if (!adminSiteSettings.tour_booking) adminSiteSettings.tour_booking = {};
+            adminSiteSettings.tour_booking.closed_title_th = document.getElementById('tour-closed-title-th').value;
+            adminSiteSettings.tour_booking.closed_title_en = document.getElementById('tour-closed-title-en').value;
+            adminSiteSettings.tour_booking.closed_msg_th = document.getElementById('tour-closed-msg-th').value;
+
+            fetch('save_data.php', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': window.csrfToken || ''
+                },
+                body: JSON.stringify({ type: 'site_settings', data: adminSiteSettings })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    alert("💾 บันทึกข้อความปิดรับนัดหมายเรียบร้อยแล้ว!");
+                } else {
+                    alert("❌ ไม่สามารถบันทึกได้: " + res.message);
+                }
+            })
+            .catch(err => alert("❌ การเชื่อมต่อล้มเหลว: " + err));
+        }
+
+        function loadTourBookings() {
+            const tbody = document.getElementById('tour-bookings-tbody');
+            const countEl = document.getElementById('tour-bookings-count');
+            if (!tbody) return;
+
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400">⏳ กำลังโหลดรายการนัดหมาย...</td></tr>`;
+
+            fetch('data/db_tour_bookings.json?v=' + Date.now())
+                .then(r => r.json())
+                .then(list => {
+                    if (countEl) countEl.textContent = `${list.length} รายการ`;
+                    if (!list || list.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400">ยังไม่มีรายการคำขอนัดหมายในระบบ</td></tr>`;
+                        return;
+                    }
+
+                    tbody.innerHTML = list.map(item => {
+                        const lineText = item.line_id ? `<span class="text-emerald-600 dark:text-emerald-400 font-bold ml-1">(LINE: ${item.line_id})</span>` : '';
+                        return `
+                            <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
+                                <td class="px-4 py-3 font-bold text-slate-900 dark:text-white whitespace-nowrap">📅 ${item.visit_date}</td>
+                                <td class="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">${item.visit_time}</td>
+                                <td class="px-4 py-3 font-bold text-slate-800 dark:text-slate-200">${item.parent_name}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <a href="tel:${(item.phone || '').replace(/[^0-9]/g, '')}" class="text-brand-500 hover:underline">${item.phone}</a>
+                                    ${lineText}
+                                </td>
+                                <td class="px-4 py-3 text-slate-600 dark:text-slate-400 max-w-[150px] truncate">${item.target_grade}</td>
+                                <td class="px-4 py-3 text-slate-700 dark:text-slate-300">${item.student_name || '-'}</td>
+                                <td class="px-4 py-3 text-slate-500 dark:text-slate-400 max-w-[200px] truncate" title="${item.notes || ''}">${item.notes || '-'}</td>
+                                <td class="px-4 py-3 text-center text-slate-400 font-english whitespace-nowrap">${item.created_at || '-'}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                })
+                .catch(err => {
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-red-400">⚠️ ไม่สามารถโหลดรายการได้ (${err})</td></tr>`;
+                });
+        }
+    </script>
+</body>
+</html>

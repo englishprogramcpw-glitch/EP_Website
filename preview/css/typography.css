@@ -1,0 +1,86 @@
+/**
+ * ==========================================================================
+ * BILINGUAL TYPOGRAPHY & WORD BREAKING SYSTEM (THAI & ENGLISH)
+ * English Program (EP) โรงเรียนชลประทานวิทยา
+ * ==========================================================================
+ * Standardizes natural word segmentation, orphan prevention, and balanced
+ * typography across both Thai and English across all screen sizes.
+ */
+
+:root {
+    --ease-out-craft: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out-craft: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* 1. Global Baseline for Thai & English */
+html {
+    scroll-behavior: smooth;
+    font-size: 17px;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* 2. Text & Paragraph Word Breaking (การตัดคำเนื้อหาทั่วไปทั้งไทยและอังกฤษ) */
+body, p, span, div, td, th, li, a, label, dd, dt {
+    /* ภาษาไทย: ตัดคำตามพจนานุกรม ICU โดยธรรมชาติ ไม่ฉีกพยางค์กลางคำ */
+    /* English: Wraps naturally at word spaces (never splits English words in half) */
+    word-break: normal !important;
+    line-break: normal !important;
+    
+    /* ตัดกลางคำเฉพาะกรณีคำยาวผิดปกติ เช่น ลิงก์ URL ยาวๆ ที่เกินความกว้างกล่องเท่านั้น */
+    overflow-wrap: break-word !important;
+    
+    /* Chromium 117+: จัดระยะบรรทัดให้อัตโนมัติ ป้องกันคำโดด (Orphan Words) หลุดไปอยู่บรรทัดใหม่คำเดียว */
+    text-wrap: pretty;
+}
+
+/* 3. Headings & Titles (หัวข้อ หัวเรื่อง ทั้งภาษาไทยและภาษาอังกฤษ) */
+h1, h2, h3, h4, h5, h6, .text-balance, .hero-title {
+    /* จัดสมดุลความยาวแต่ละบรรทัดให้สมมาตร ไม่แหว่ง และไม่ตัดกลางคำ */
+    text-wrap: balance !important;
+    word-break: normal !important;
+    line-break: normal !important;
+    hyphens: none !important;
+}
+
+/* 4. Dedicated English Typography (การปรับแต่งเฉพาะข้อความภาษาอังกฤษ) */
+.lang-en, [lang="en"], .font-english {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    hyphens: manual;
+}
+
+/* 5. Dedicated Thai Typography (การปรับแต่งเฉพาะข้อความภาษาไทย) */
+.lang-th, [lang="th"], html[lang="th"] {
+    font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    word-break: normal !important;
+    line-break: normal !important;
+    hyphens: none !important;
+}
+
+/* 6. ล็อกข้อความเฉพาะกลุ่มห้ามตัดขึ้นบรรทัดใหม่เด็ดขาด (No-Wrap Atomic Elements) */
+.medal-badge, .badge, th, .btn-print-sar, #yearTabsNav button,
+.view-switcher button, .whitespace-nowrap, .room-badge,
+.student-name-nowrap, .tag-nowrap, [class*="nowrap"] {
+    word-break: keep-all !important;
+    white-space: nowrap !important;
+}
+
+/* คำนำหน้านามภาษาไทย (เด็กชาย/เด็กหญิง/นาย/นางสาว) และอังกฤษ (Mstr./Miss/Mr./Ms.) */
+.thai-prefix, .name-prefix {
+    display: inline-block;
+    white-space: nowrap !important;
+}
+
+/* ตัวย่อภาษาอังกฤษทางการ (EP, CPW, SAR, NST, SISB, etc.) */
+.acronym-nowrap {
+    white-space: nowrap !important;
+    letter-spacing: 0.03em;
+}
+
+/* 7. Strict Single-Line Navigation Rules (แถบเมนูนำทางต้องอยู่บรรทัดเดียวเสมอ) */
+.nav-link-sisb, nav a, nav button, .nav-item {
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    flex-shrink: 0;
+}

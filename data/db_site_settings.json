@@ -1,0 +1,275 @@
+{
+    "about": {
+        "intro_th": "โครงการภาคภาษาอังกฤษ โรงเรียนชลประทานวิทยา มีชื่อเต็มคือ \"โครงการจัดการเรียนการสอนตามหลักสูตรกระทรวงศึกษาธิการเป็นภาษาอังกฤษ\" หรือเรียกสั้นๆ ในระดับสากลว่า \"English Program (EP)\" โดยโรงเรียนชลประทานวิทยาตระหนักถึงความสำคัญของการใช้ภาษาอังกฤษเป็นเครื่องมือในการสื่อสาร แสวงหาความรู้ และเตรียมความพร้อมสู่ประชาคมอาเซียน จึงได้ขับเคลื่อนนโยบาย \"ชลประทานวิทยา 4.0\" เพื่อพัฒนาผู้เรียนสู่การเป็น Smart Student ที่มีความพร้อมทั้งร่างกายและทักษะการสื่อสารภาษาอังกฤษอย่างดีเยี่ยม",
+        "intro_en": "The English Program at Chonprathanwittaya School has the full official name of \"โครงการจัดการเรียนการสอนตามหลักสูตรกระทรวงศึกษาธิการเป็นภาษาอังกฤษ\", known internationally in short as \"English Program (EP)\". Chonprathanwittaya School recognizes the importance of using English as a tool for communication, acquiring knowledge, and preparing for the ASEAN community. It has driven the \"Chonprathanwittaya 4.0\" policy to develop students into Smart Students with both physical readiness and excellent English communication skills.",
+        "history": [
+            {
+                "year": "2559",
+                "title": "เปิดสอนระดับประถมศึกษา (ป.1 - ป.6) เป็นครั้งแรก",
+                "desc": "ได้รับอนุญาตจากกระทรวงศึกษาธิการให้เปิดการเรียนการสอนโครงการภาคภาษาอังกฤษ (English Program) เป็นปีการศึกษาแรก"
+            },
+            {
+                "year": "2561",
+                "title": "ขยายหลักสูตรสู่มัธยมศึกษาตอนต้น (ม.1 - ม.3)",
+                "desc": "ได้รับอนุญาตให้ขยายการเรียนการสอนไปยังระดับมัธยมศึกษาตอนต้น เพื่อความต่อเนื่องทางการศึกษา"
+            },
+            {
+                "year": "2563",
+                "title": "ขยายหลักสูตรสู่มัธยมศึกษาตอนปลาย (ม.4 - ม.6)",
+                "desc": "ได้รับอนุญาตให้ขยายการสอนเพิ่มขึ้นไปยังระดับชั้นมัธยมศึกษาตอนปลาย เพื่อเตรียมความพร้อมสู่มหาวิทยาลัย"
+            },
+            {
+                "year": "2565 เป็นต้นมา",
+                "title": "เปิดการสอนครอบคลุมทุกระดับชั้นอย่างสมบูรณ์แบบ",
+                "desc": "โครงการ EP เปิดสอนครบตั้งแต่ระดับชั้นประถมศึกษาปีที่ 1 ถึง มัธยมศึกษาปีที่ 6 อย่างเป็นทางการ"
+            }
+        ]
+    },
+    "fees": {
+        "primary": {
+            "tuition": "37,000",
+            "food": "4,500",
+            "astro": "300",
+            "activities": "5,000"
+        },
+        "junior": {
+            "tuition": "40,000",
+            "food": "0",
+            "astro": "300",
+            "activities": "6,000"
+        },
+        "senior": {
+            "tuition": "42,000",
+            "food": "0",
+            "astro": "300",
+            "activities": "7,000"
+        }
+    },
+    "fees_table": [
+        {
+            "level_th": "ประถมศึกษาปีที่ 1",
+            "level_en": "Primary 1",
+            "tuition": "37,000.00",
+            "food": "4,500.00",
+            "astro": "300.00",
+            "total": "41,800.00"
+        },
+        {
+            "level_th": "ประถมศึกษาปีที่ 2",
+            "level_en": "Primary 2",
+            "tuition": "36,000.00",
+            "food": "4,500.00",
+            "astro": "300.00",
+            "total": "40,800.00"
+        },
+        {
+            "level_th": "ประถมศึกษาปีที่ 3",
+            "level_en": "Primary 3",
+            "tuition": "36,000.00",
+            "food": "4,500.00",
+            "astro": "300.00",
+            "total": "40,800.00"
+        },
+        {
+            "level_th": "ประถมศึกษาปีที่ 4",
+            "level_en": "Primary 4",
+            "tuition": "36,000.00",
+            "food": "4,500.00",
+            "astro": "300.00",
+            "total": "40,800.00"
+        },
+        {
+            "level_th": "ประถมศึกษาปีที่ 5",
+            "level_en": "Primary 5",
+            "tuition": "36,000.00",
+            "food": "4,500.00",
+            "astro": "300.00",
+            "total": "40,800.00"
+        },
+        {
+            "level_th": "ประถมศึกษาปีที่ 6",
+            "level_en": "Primary 6",
+            "tuition": "36,000.00",
+            "food": "4,500.00",
+            "astro": "300.00",
+            "total": "40,800.00"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 1",
+            "level_en": "Grade 7",
+            "tuition": "40,000.00",
+            "food": "-",
+            "astro": "300.00",
+            "total": "40,300.00"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 2",
+            "level_en": "Grade 8",
+            "tuition": "40,000.00",
+            "food": "-",
+            "astro": "300.00",
+            "total": "40,300.00"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 3",
+            "level_en": "Grade 9",
+            "tuition": "40,000.00",
+            "food": "-",
+            "astro": "300.00",
+            "total": "40,300.00"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 4",
+            "level_en": "Grade 10",
+            "tuition": "42,000.00",
+            "food": "-",
+            "astro": "300.00",
+            "total": "42,300.00"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 5",
+            "level_en": "Grade 11",
+            "tuition": "42,000.00",
+            "food": "-",
+            "astro": "300.00",
+            "total": "42,300.00"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 6",
+            "level_en": "Grade 12",
+            "tuition": "42,000.00",
+            "food": "-",
+            "astro": "300.00",
+            "total": "42,300.00"
+        }
+    ],
+    "books_table": [
+        {
+            "level_th": "ประถมศึกษาปีที่ 1",
+            "level_en": "Primary 1",
+            "plan": "-",
+            "price": "3,767"
+        },
+        {
+            "level_th": "ประถมศึกษาปีที่ 2",
+            "level_en": "Primary 2",
+            "plan": "-",
+            "price": "3,468"
+        },
+        {
+            "level_th": "ประถมศึกษาปีที่ 3",
+            "level_en": "Primary 3",
+            "plan": "-",
+            "price": "3,447"
+        },
+        {
+            "level_th": "ประถมศึกษาปีที่ 4",
+            "level_en": "Primary 4",
+            "plan": "-",
+            "price": "3,459"
+        },
+        {
+            "level_th": "ประถมศึกษาปีที่ 5",
+            "level_en": "Primary 5",
+            "plan": "-",
+            "price": "3,178"
+        },
+        {
+            "level_th": "ประถมศึกษาปีที่ 6",
+            "level_en": "Primary 6",
+            "plan": "-",
+            "price": "3,299"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 1",
+            "level_en": "Grade 7",
+            "plan": "-",
+            "price": "6,789"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 2",
+            "level_en": "Grade 8",
+            "plan": "-",
+            "price": "4,909"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 3",
+            "level_en": "Grade 9",
+            "plan": "-",
+            "price": "5,291"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 4",
+            "level_en": "Grade 10",
+            "plan": "Math - Science",
+            "price": "2,588"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 4",
+            "level_en": "Grade 10",
+            "plan": "Math - English",
+            "price": "3,025"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 5",
+            "level_en": "Grade 11",
+            "plan": "Math - Science",
+            "price": "2,507"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 5",
+            "level_en": "Grade 11",
+            "plan": "Math - English",
+            "price": "2,581"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 6",
+            "level_en": "Grade 12",
+            "plan": "Math - Science",
+            "price": "1,893"
+        },
+        {
+            "level_th": "มัธยมศึกษาปีที่ 6",
+            "level_en": "Grade 12",
+            "plan": "Math - English",
+            "price": "1,893"
+        }
+    ],
+    "contact": {
+        "phone": "0 2583 5444",
+        "email": "ep@cpw.ac.th",
+        "address_th": "โรงเรียนชลประทานวิทยา เลขที่ 201 หมู่ 1 ถนนติวานนท์ ตำบลบางตลาด อำเภอปากเกร็ด จังหวัดนนทบุรี 11120",
+        "address_en": "Chonprathanwittaya School, 201 Moo 1 Tiwanon Road, Bang Talat, Pak Kret, Nonthaburi 11120",
+        "facebook": "profile.php?id=100093686707861",
+        "plus_code": "VGX6+88R ตำบลบางตลาด อำเภอปากเกร็ด นนทบุรี 11120",
+        "map_query": "VGX6+88R Pak Kret, Nonthaburi",
+        "map_url": "https:\/\/maps.google.com\/?q=VGX6%2B88R+ตำบลบางตลาด+อำเภอปากเกร็ด+นนทบุรี",
+        "building_guide_th": "อาคารโครงการฯ ภาคภาษาอังกฤษ (EP) พิกัด Plus Code: VGX6+88R เข้าประตู 1 (ฝั่งถนนติวานนท์) ตรงเข้ามาผ่านวงเวียน จะพบอาคารเรียนรูปตัว U ของโครงการ EP",
+        "building_guide_en": "English Program (EP) Building, Google Plus Code: VGX6+88R. Enter Gate 1 (Tiwanon Rd.) and proceed straight past the roundabout to the U-shaped EP Building."
+    },
+    "notifications": {
+        "line_token": "EaLdWZEM1L9xccsopqxq1RI4FuNz6ZI20ZvUQnnfTCHeYl8+nUpBE7xiamTByYte\/9\/YxzkYNDo3Ol8xWfiphdaQTgU2oWWZ+Q0HsU+VcilytocBWsVML2WwPSfx3blsW5\/norLjd8djZhVJQbrxrgdB04t89\/1O\/w1cDnyilFU=",
+        "line_target": "C9b85474fb2a9faf0078865e60edcca48",
+        "note": "ใส่ Channel Access Token และ User ID หรือ Group ID ของ LINE สำหรับแจ้งเตือนการนัดหมายเยี่ยมชมโรงเรียน"
+    },
+    "page_media": {
+        "home_primary_img": "https:\/\/app.cpw.ac.th\/cpw_api_content\/images\/activities\/2026-08\/320260803161101\/32026080316110120260803161147_668274.jpg",
+        "home_junior_img": "https:\/\/app.cpw.ac.th\/cpw_api_content\/images\/activities\/2026-08\/320260826141342\/32026082614134220260826142252_444095.jpg",
+        "home_senior_img": "https:\/\/app.cpw.ac.th\/cpw_api_content\/images\/activities\/2026-08\/320260822162040\/32026082216204020260824114424_685193.jpg",
+        "home_showcase_img": "img\/ep_cover_banner.jpg",
+        "about_banner_img": "img\/ep_cover_banner.jpg",
+        "curriculum_banner_img": "https:\/\/app.cpw.ac.th\/cpw_api_content\/images\/activities\/2026-08\/320260822162040\/32026082216204020260824114421_290234.jpg",
+        "admission_banner_img": "https:\/\/app.cpw.ac.th\/cpw_api_content\/images\/activities\/2026-08\/320260822162040\/32026082216204020260824114424_685193.jpg",
+        "fees_banner_img": "img\/ep_cover_banner.jpg",
+        "staff_banner_img": "img\/ep_bot_lobby_bg.jpg",
+        "tour_banner_img": "img\/ep_cover_banner.jpg",
+        "contact_banner_img": "img\/ep_bot_lobby_bg.jpg"
+    },
+    "tour_booking": {
+        "enabled": false,
+        "closed_title_th": "ระบบนัดหมายเข้าชมโครงการปิดรับชั่วคราว",
+        "closed_title_en": "Campus Tour Booking Temporarily Closed",
+        "closed_msg_th": "ขณะนี้ระบบนัดหมายเข้าชมโครงการฯ ปิดรับการลงทะเบียนชั่วคราว หากท่านต้องการสอบถามข้อมูลหรือนัดหมายเป็นกรณีพิเศษ กรุณาติดต่อสำนักงานโครงการ EP ผ่านทางโทรศัพท์",
+        "closed_msg_en": "Campus tour requests are temporarily unavailable. For urgent inquiries or special arrangements, please contact the EP office directly."
+    }
+}

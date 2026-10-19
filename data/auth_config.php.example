@@ -1,0 +1,21 @@
+<?php
+/**
+ * EP Website - Authentication Configuration Template
+ * โครงการจัดการเรียนการสอนตามหลักสูตรกระทรวงศึกษาธิการเป็นภาษาอังกฤษ โรงเรียนชลประทานวิทยา
+ * 
+ * คัดลอกไฟล์นี้เป็น auth_config.php แล้วตั้งค่ารหัสผ่านผ่านหน้าแผงควบคุมแอดมิน
+ */
+
+defined('EP_SECURE_AUTH') or exit('Direct access not permitted');
+
+return [
+    'admin' => [
+        'username' => 'admin',
+        // Default password hash: epadmin2026
+        'hash' => '$2y$10$O0hG443gJkI0sLz03J4b5eG532mQ7j7o.k8n8hT72B6n8F2U2f0uK',
+        'name' => 'ผู้ดูแลระบบ EP (Admin)',
+        'role' => 'superadmin',
+        'must_change' => true,
+        'updated_at' => '2026-10-19 09:00:00'
+    ]
+];
