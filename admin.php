@@ -271,14 +271,14 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
                                     <div class="flex flex-wrap items-center gap-2">
                                         <h3 class="font-black text-slate-900 dark:text-white text-base">สวิตช์ควบคุมการเผยแพร่เว็บไซต์ (Visibility Gateway)</h3>
                                         <span id="maint-badge" class="text-[11px] px-2.5 py-0.5 rounded-full font-bold <?php echo $isMaintActive ? 'bg-amber-500 text-slate-950' : 'bg-emerald-500 text-white'; ?>">
-                                            <?php echo $isMaintActive ? '🚧 ปิดปรับปรุง (ส่งไป Facebook)' : '🟢 ออนไลน์สู่สาธารณะ (Live)'; ?>
+                                            <?php echo $isMaintActive ? '🚧 สถานะ: ส่งไป Facebook (คนนอกไม่เห็นเว็บ)' : '🟢 สถานะ: ออนไลน์สู่สาธารณะ (เปิดให้ทุกคนเข้าชม)'; ?>
                                         </span>
                                     </div>
                                     <p id="maint-desc" class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                         <?php if ($isMaintActive): ?>
-                                            บุคคลภายนอกที่คลิกมาจากเว็บโรงเรียนจะถูก <strong>ส่งต่อไปยัง Facebook เพจ EP อัตโนมัติ</strong> (เฉพาะแอดมินที่ล็อกอินเท่านั้นที่ดูเว็บนี้ได้)
+                                            ขณะนี้บุคคลภายนอกที่คลิกมาจากเว็บโรงเรียนจะถูก <strong>ส่งต่อไปยัง Facebook เพจ EP อัตโนมัติ</strong> (เฉพาะแอดมินที่ล็อกอินเท่านั้นที่ดูเว็บนี้ได้)
                                         <?php else: ?>
-                                            เปิดให้ทุกคนเข้าชมเว็บไซต์โครงการ EP ตัวจริงได้ตามปกติ
+                                            ขณะนี้เปิดให้ทุกคนเข้าชมเว็บไซต์โครงการ EP ตัวจริงได้ตามปกติ
                                         <?php endif; ?>
                                     </p>
                                 </div>
@@ -286,7 +286,7 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
                             <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
                                 <button type="button" onclick="toggleMaintenanceMode()" id="btnToggleMaint" class="px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-sm flex items-center gap-2 <?php echo $isMaintActive ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-amber-500 hover:bg-amber-600 text-slate-950'; ?>">
                                     <span id="btnToggleMaintIcon"><?php echo $isMaintActive ? '🚀' : '🔒'; ?></span>
-                                    <span id="btnToggleMaintText"><?php echo $isMaintActive ? 'กดเปิดเว็บไซต์สู่สาธารณะ' : 'กดสลับเป็นส่งไป Facebook'; ?></span>
+                                    <span id="btnToggleMaintText"><?php echo $isMaintActive ? 'คลิกเพื่อเปิดเว็บสู่สาธารณะ' : 'คลิกเพื่อส่งต่อไป Facebook'; ?></span>
                                 </button>
                                 <button type="button" onclick="switchAdminTab('security')" class="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
                                     ⚙️ ตั้งค่า
@@ -1322,24 +1322,24 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
                 if (icon) icon.innerText = "🔒";
                 if (badge) {
                     badge.className = "text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-amber-500 text-slate-950";
-                    badge.innerText = "🚧 ปิดปรับปรุง (ส่งไป Facebook)";
+                    badge.innerText = "🚧 สถานะ: ส่งไป Facebook (คนนอกไม่เห็นเว็บ)";
                 }
-                if (desc) desc.innerHTML = "บุคคลภายนอกที่คลิกมาจากเว็บโรงเรียนจะถูก <strong>ส่งต่อไปยัง Facebook เพจ EP อัตโนมัติ</strong> (เฉพาะแอดมินที่ล็อกอินเท่านั้นที่ดูเว็บนี้ได้)";
+                if (desc) desc.innerHTML = "ขณะนี้บุคคลภายนอกที่คลิกมาจากเว็บโรงเรียนจะถูก <strong>ส่งต่อไปยัง Facebook เพจ EP อัตโนมัติ</strong> (เฉพาะแอดมินที่ล็อกอินเท่านั้นที่ดูเว็บนี้ได้)";
                 if (btn) btn.className = "px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-sm flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white";
                 if (btnIcon) btnIcon.innerText = "🚀";
-                if (btnText) btnText.innerText = "กดเปิดเว็บไซต์สู่สาธารณะ";
+                if (btnText) btnText.innerText = "คลิกเพื่อเปิดเว็บสู่สาธารณะ";
                 if (chkEnabled) chkEnabled.checked = true;
             } else {
                 if (card) card.className = "rounded-3xl p-6 border transition-all duration-300 bg-emerald-500/10 border-emerald-500/30";
                 if (icon) icon.innerText = "🌐";
                 if (badge) {
                     badge.className = "text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-500 text-white";
-                    badge.innerText = "🟢 ออนไลน์สู่สาธารณะ (Live)";
+                    badge.innerText = "🟢 สถานะ: ออนไลน์สู่สาธารณะ (เปิดให้ทุกคนเข้าชม)";
                 }
-                if (desc) desc.innerText = "เปิดให้ทุกคนเข้าชมเว็บไซต์โครงการ EP ตัวจริงได้ตามปกติ";
+                if (desc) desc.innerText = "ขณะนี้เปิดให้ทุกคนเข้าชมเว็บไซต์โครงการ EP ตัวจริงได้ตามปกติ";
                 if (btn) btn.className = "px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-sm flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950";
                 if (btnIcon) btnIcon.innerText = "🔒";
-                if (btnText) btnText.innerText = "กดสลับเป็นส่งไป Facebook";
+                if (btnText) btnText.innerText = "คลิกเพื่อส่งต่อไป Facebook";
                 if (chkEnabled) chkEnabled.checked = false;
             }
         }
