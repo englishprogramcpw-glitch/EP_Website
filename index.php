@@ -1156,7 +1156,10 @@ $homeSeniorImg = !empty($pageMedia['home_senior_img']) ? $pageMedia['home_senior
                     return res.json();
                 })
                 .then(list => {
-                    allActivities = list;
+                    allActivities = list.map((item, originalIndex) => ({
+                        ...item,
+                        originalIndex
+                    }));
                     if (loader) loader.classList.add('hidden');
                     if (grid) grid.classList.remove('hidden');
                     renderActivities();
@@ -1191,8 +1194,9 @@ $homeSeniorImg = !empty($pageMedia['home_senior_img']) ? $pageMedia['home_senior
             itemsToRender.forEach((item, index) => {
                 const card = document.createElement('div');
                 card.className = "group relative cursor-pointer rounded-2xl overflow-hidden shadow-sm hover:shadow-lg border border-slate-200/80 dark:border-slate-800 transition-all duration-300 aspect-[3/2] flex flex-col justify-end bg-slate-950";
+                const targetAlbum = item.originalIndex !== undefined ? item.originalIndex : index;
                 card.onclick = () => {
-                    window.location.href = `news.php?tab=activities`;
+                    window.location.href = `news.php?tab=activities&album=${targetAlbum}`;
                 };
 
                 const fallbackImg = 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&auto=format&fit=crop&q=60';

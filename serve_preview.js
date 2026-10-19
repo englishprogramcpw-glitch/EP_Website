@@ -268,8 +268,20 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Route to set preview bypass cookie
+  if (req.url.startsWith('/set_preview_bypass')) {
+    res.writeHead(302, {
+      'Set-Cookie': 'ep_preview_bypass=1; Path=/; Max-Age=86400',
+      'Location': '/'
+    });
+    res.end();
+    return;
+  }
+
   // Check Maintenance Simulation for public pages
-  const isPublicPage = (req.url === '/' || req.url === '/index.html' || req.url === '/index.php' || (req.url.endsWith('.html') && !req.url.includes('admin')));
+  const cookies = req.headers.cookie || '';
+  const isBypassed = req.url.includes('bypass=1') || cookies.includes('ep_preview_bypass=1') || cookies.includes('ep_admin_session=1');
+  const isPublicPage = !isBypassed && (req.url === '/' || req.url === '/index.html' || req.url === '/index.php' || req.url.startsWith('/news') || (req.url.endsWith('.html') && !req.url.includes('admin')));
   if (isPublicPage) {
     const maintFile = path.join(ROOT_DIR, 'data', 'maintenance_config.json');
     if (fs.existsSync(maintFile)) {
@@ -320,8 +332,11 @@ const server = http.createServer((req, res) => {
                   <a href="${fbTarget}" target="_blank" class="block w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shadow-md">
                     🌐 ไปยัง Facebook เพจ EP ทันที
                   </a>
-                  <a href="/admin.html" class="block w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs transition shadow-md">
-                    🔐 เข้าสู่ระบบหลังบ้าน (Admin Login ด้วยรหัสผ่าน)
+                  <a href="/set_preview_bypass" class="block w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition border border-slate-700">
+                    👁️ เข้าชมหน้าเว็บตัวอย่าง (โหมดผู้พัฒนา / Preview Website)
+                  </a>
+                  <a href="/admin.html" class="block w-full py-2.5 rounded-xl bg-brand-500/20 hover:bg-brand-500/30 text-brand-300 font-bold text-xs transition border border-brand-500/30">
+                    🔐 เข้าสู่ระบบหลังบ้าน (Admin Dashboard)
                   </a>
                 </div>
               </div>

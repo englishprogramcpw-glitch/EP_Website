@@ -340,6 +340,18 @@ $currentPage = "news";
                     // Build Year Filter UI dynamically
                     renderActivityYearFilters();
                     renderActivities();
+
+                    // ตรวจสอบว่ามีพารามิเตอร์ album ส่งมาหรือไม่ เพื่อเปิดรูปกิจกรรมนั้นๆ ทันที
+                    const urlP = new URLSearchParams(window.location.search);
+                    const albumParam = urlP.get('album');
+                    if (albumParam !== null) {
+                        const targetIdx = parseInt(albumParam, 10);
+                        if (!isNaN(targetIdx)) {
+                            setTimeout(() => {
+                                openGalleryModal(targetIdx);
+                            }, 120);
+                        }
+                    }
                 })
                 .catch(err => {
                     console.error("Failed to load activities database:", err);
@@ -567,7 +579,8 @@ $currentPage = "news";
 
         // --- Gallery Modal & Lightbox Logic ---
         function openGalleryModal(idx) {
-            const album = allActivities[idx];
+            // ค้นหาอัลบั้มจาก originalIndex หรือ index ของ array
+            const album = allActivities.find(a => a.originalIndex === idx) || allActivities[idx];
             if (!album) return;
 
             document.getElementById('galleryModalTitle').textContent = album.title;
@@ -599,6 +612,7 @@ $currentPage = "news";
             } else {
                 // Vary aspect ratios for masonry variety inside the album
                 const aspects = ['aspect-[4/3]', 'aspect-[3/4]', 'aspect-[1/1]', 'aspect-[4/3]', 'aspect-[16/9]', 'aspect-[3/4]'];
+                const fallbackImg = 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&auto=format&fit=crop&q=60';
 
                 currentAlbumImages.forEach((imgUrl, imgIdx) => {
                     const thumbDiv = document.createElement('div');
@@ -607,11 +621,17 @@ $currentPage = "news";
                     thumbDiv.onclick = () => openLightbox(imgIdx);
 
                     thumbDiv.innerHTML = `
-                        <img src="${imgUrl}" alt="Photo ${imgIdx + 1}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
-                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-200 flex items-center justify-center">
+                        <!-- Skeleton shimmer placeholder -->
+                        <div class="absolute inset-0 bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
+                        <img src="${imgUrl}" 
+                             alt="Photo ${imgIdx + 1}" 
+                             class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-0 transition-opacity"
+                             onload="this.classList.remove('opacity-0'); if(this.previousElementSibling) this.previousElementSibling.remove();"
+                             onerror="this.onerror=null; this.src='${fallbackImg}'; this.classList.remove('opacity-0'); if(this.previousElementSibling) this.previousElementSibling.remove();">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-200 flex items-center justify-center pointer-events-none">
                             <span class="text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 drop-shadow-lg"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
                         </div>
-                        <span class="absolute bottom-2 right-2 bg-slate-950/60 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">${imgIdx + 1}</span>
+                        <span class="absolute bottom-2 right-2 bg-slate-950/60 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">${imgIdx + 1}</span>
                     `;
                     grid.appendChild(thumbDiv);
                 });
