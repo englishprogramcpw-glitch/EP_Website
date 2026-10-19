@@ -93,9 +93,9 @@ function processPHPContent(fileContent, pageTitle, currentPage) {
     content = content.replace(/<\?php\s+echo\s+htmlspecialchars\(\$_SESSION\['csrf_token'\][\s\S]*?\?>/g, 'preview_csrf_token');
     content = content.replace(/<\?php\s+echo\s+!empty\(\$isMaintActive\)\s*\?\s*'1'\s*:\s*'0';\s*\?>/g, isMaintActive ? '1' : '0');
     content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'🚀'\s*:\s*'🔒';\s*\?>/g, isMaintActive ? '🚀' : '🔒');
-    content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'กดเปิดเว็บไซต์สู่สาธารณะ'\s*:\s*'กดสลับเป็นส่งไป Facebook';\s*\?>/g, isMaintActive ? 'กดเปิดเว็บไซต์สู่สาธารณะ' : 'กดสลับเป็นส่งไป Facebook');
+    content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'คลิกเพื่อเปิดเว็บสู่สาธารณะ'\s*:\s*'คลิกเพื่อส่งต่อไป Facebook';\s*\?>/g, isMaintActive ? 'คลิกเพื่อเปิดเว็บสู่สาธารณะ' : 'คลิกเพื่อส่งต่อไป Facebook');
     content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'🔒'\s*:\s*'🌐';\s*\?>/g, isMaintActive ? '🔒' : '🌐');
-    content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'🚧 ปิดปรับปรุง \(ส่งไป Facebook\)'\s*:\s*'🟢 ออนไลน์สู่สาธารณะ \(Live\)';\s*\?>/g, isMaintActive ? '🚧 ปิดปรับปรุง (ส่งไป Facebook)' : '🟢 ออนไลน์สู่สาธารณะ (Live)');
+    content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'🚧 สถานะ: ส่งไป Facebook \(คนนอกไม่เห็นเว็บ\)'\s*:\s*'🟢 สถานะ: ออนไลน์สู่สาธารณะ \(เปิดให้ทุกคนเข้าชม\)';\s*\?>/g, isMaintActive ? '🚧 สถานะ: ส่งไป Facebook (คนนอกไม่เห็นเว็บ)' : '🟢 สถานะ: ออนไลน์สู่สาธารณะ (เปิดให้ทุกคนเข้าชม)');
     content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'bg-amber-500\/10 border-amber-500\/30'\s*:\s*'bg-emerald-500\/10 border-emerald-500\/30';\s*\?>/g, isMaintActive ? 'bg-amber-500/10 border-amber-500/30' : 'bg-emerald-500/10 border-emerald-500/30');
     content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'bg-amber-500 text-slate-950'\s*:\s*'bg-emerald-500 text-white';\s*\?>/g, isMaintActive ? 'bg-amber-500 text-slate-950' : 'bg-emerald-500 text-white');
     content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'bg-emerald-600 hover:bg-emerald-700 text-white'\s*:\s*'bg-amber-500 hover:bg-amber-600 text-slate-950';\s*\?>/g, isMaintActive ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-amber-500 hover:bg-amber-600 text-slate-950');
@@ -153,9 +153,14 @@ function compile(silent = false) {
         const currentMatch = fileContent.match(/\$currentPage\s*=\s*"([^"]+)"/);
         if (currentMatch) currentPage = currentMatch[1];
 
-        // Remove the PHP variable block at the very top
-        fileContent = fileContent.replace(/<\?php[\s\S]*?\$pageTitle[\s\S]*?\?>/g, '');
-        fileContent = fileContent.replace(/<\?php[\s\S]*?\$currentPage[\s\S]*?\?>/g, '');
+        // Remove the PHP variable block at the very top (preserve admin.php login screen)
+        if (file === 'admin.php') {
+            fileContent = fileContent.replace(/\$pageTitle\s*=\s*"[^"]+";?/g, '');
+            fileContent = fileContent.replace(/<\?php\s*require_once[\s\S]*?verify_admin_login[\s\S]*?\?>/g, '');
+        } else {
+            fileContent = fileContent.replace(/<\?php[\s\S]*?\$pageTitle[\s\S]*?\?>/g, '');
+            fileContent = fileContent.replace(/<\?php[\s\S]*?\$currentPage[\s\S]*?\?>/g, '');
+        }
 
         const compiledContent = processPHPContent(fileContent, pageTitle, currentPage);
         

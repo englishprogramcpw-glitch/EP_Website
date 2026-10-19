@@ -201,6 +201,20 @@ const server = http.createServer((req, res) => {
           try { config = JSON.parse(fs.readFileSync(maintFile, 'utf8')); } catch(e) {}
         }
 
+        if (data.action === 'login') {
+          const u = (data.username || '').trim();
+          const p = (data.password || '');
+          if (u === 'admin' && p === 'epadmin2026') {
+            res.writeHead(200);
+            res.end(JSON.stringify({ success: true, message: 'เข้าสู่ระบบสำเร็จ' }));
+            return;
+          } else {
+            res.writeHead(200);
+            res.end(JSON.stringify({ success: false, message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' }));
+            return;
+          }
+        }
+
         if (data.action === 'get_maintenance') {
           res.writeHead(200);
           res.end(JSON.stringify({ success: true, config }));
@@ -256,7 +270,7 @@ const server = http.createServer((req, res) => {
 
   // Check Maintenance Simulation for public pages
   const isPublicPage = (req.url === '/' || req.url === '/index.html' || req.url === '/index.php' || (req.url.endsWith('.html') && !req.url.includes('admin')));
-  if (isPublicPage && !req.url.includes('bypass=1')) {
+  if (isPublicPage) {
     const maintFile = path.join(ROOT_DIR, 'data', 'maintenance_config.json');
     if (fs.existsSync(maintFile)) {
       try {
@@ -288,7 +302,7 @@ const server = http.createServer((req, res) => {
                     ส่งต่อผู้เข้าชมไปยัง Facebook เพจ EP อัตโนมัติ
                   </h1>
                   <p class="text-xs text-slate-400 leading-relaxed">
-                    เนื่องจากเว็บไซต์กำลังอยู่ระหว่างจัดเตรียมข้อมูล คนทั่วไปที่คลิกมาจากเว็บโรงเรียนจะถูกส่งต่อไปยัง Facebook เพจเดิมอัตโนมัติ
+                    เนื่องจากเว็บไซต์กำลังอยู่ระหว่างจัดเตรียมข้อมูล บุคคลทั่วไปที่คลิกมาจากเว็บโรงเรียนจะถูกส่งต่อไปยัง Facebook เพจ EP อัตโนมัติทันที
                   </p>
                 </div>
 
@@ -303,14 +317,11 @@ const server = http.createServer((req, res) => {
                 </div>
 
                 <div class="space-y-2.5 pt-2">
-                  <a href="/index.html?bypass=1" class="block w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs transition shadow-md">
-                    🖥️ เข้าชมหน้าเว็บโครงการ EP ทันที (โหมดทดสอบ / บายพาส)
+                  <a href="${fbTarget}" target="_blank" class="block w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shadow-md">
+                    🌐 ไปยัง Facebook เพจ EP ทันที
                   </a>
-                  <a href="/admin.html" class="block w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition border border-slate-700">
-                    ⚙️ เข้าสู่ระบบหลังบ้าน (Admin Cockpit) เพื่อกดเปิดเว็บสู่สาธารณะ
-                  </a>
-                  <a href="${fbTarget}" target="_blank" class="block w-full py-2.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 font-bold text-xs transition border border-blue-500/30">
-                    🌐 ทดสอบเปิด Facebook เพจ EP (${fbTarget})
+                  <a href="/admin.html" class="block w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs transition shadow-md">
+                    🔐 เข้าสู่ระบบหลังบ้าน (Admin Login ด้วยรหัสผ่าน)
                   </a>
                 </div>
               </div>

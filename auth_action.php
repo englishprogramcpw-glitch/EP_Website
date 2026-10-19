@@ -16,17 +16,26 @@ if (empty($_SESSION['csrf_token']) || $csrfToken !== $_SESSION['csrf_token']) {
     exit;
 }
 
-// 2. ตรวจสอบสถานะการล็อกอิน
+// 2. อ่านข้อมูลที่ส่งเข้ามา
+$raw = file_get_contents('php://input');
+$data = json_decode($raw, true) ?: $_POST;
+$action = $data['action'] ?? '';
+
+// จัดการคำขอล็อกอินผ่าน API
+if ($action === 'login') {
+    $username = trim($data['username'] ?? '');
+    $password = trim($data['password'] ?? '');
+    $result = verify_admin_login($username, $password);
+    echo json_encode($result);
+    exit;
+}
+
+// 3. ตรวจสอบสถานะการล็อกอินสำหรับการกระทำอื่นๆ
 if (!is_admin_logged_in()) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'กรุณาเข้าสู่ระบบผู้ดูแลระบบก่อนทำรายการ']);
     exit;
 }
-
-// 3. อ่านข้อมูลที่ส่งเข้ามา
-$raw = file_get_contents('php://input');
-$data = json_decode($raw, true) ?: $_POST;
-$action = $data['action'] ?? '';
 
 // เปลี่ยนรหัสผ่าน
 if ($action === 'change_password') {

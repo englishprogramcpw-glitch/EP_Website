@@ -40,64 +40,66 @@ if (!is_admin_logged_in()):
     <title><?php echo $pageTitle; ?></title>
     <?php include 'head.php'; ?>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-slate-950 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
-        <div class="text-center space-y-3">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-500 text-white font-black text-2xl font-english shadow-lg shadow-brand-500/30">
-                EP
-            </div>
-            <h1 class="text-xl font-black text-white tracking-wide">
-                ระบบจัดการข้อมูลหลังบ้าน (Admin)
-            </h1>
-            <p class="text-xs text-slate-400 leading-relaxed">
-                โครงการจัดการเรียนการสอนตามหลักสูตรกระทรวงศึกษาธิการเป็นภาษาอังกฤษ<br>โรงเรียนชลประทานวิทยา
-            </p>
-        </div>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
 
-        <?php if (!empty($loginError)): ?>
-            <div class="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
-                <span>⚠️</span>
-                <span><?php echo htmlspecialchars($loginError, ENT_QUOTES, 'UTF-8'); ?></span>
-            </div>
-        <?php endif; ?>
-
-        <form method="POST" action="admin.php" class="space-y-4">
-            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
-            
-            <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-slate-300">ชื่อผู้ใช้งาน (Username)</label>
-                <input type="text" name="username" required autocomplete="username" value="admin"
-                    class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-brand-500 transition">
-            </div>
-
-            <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-slate-300">รหัสผ่าน (Password)</label>
-                <div class="relative">
-                    <input type="password" id="loginPassword" name="password" required autocomplete="current-password"
-                        placeholder="••••••••"
-                        class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-brand-500 transition pr-10">
-                    <button type="button" onclick="togglePassVisibility()" class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 text-sm">
-                        👁️
-                    </button>
+    <!-- 1. ADMIN LOGIN SCREEN (บังคับกรอกรหัสผ่านเสมอหากยังไม่ล็อกอิน) -->
+    <div id="admin-login-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-slate-950 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
+            <div class="text-center space-y-3">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-500 text-white font-black text-2xl font-english shadow-lg shadow-brand-500/30">
+                    EP
                 </div>
+                <h1 class="text-xl font-black text-white tracking-wide">
+                    ระบบจัดการข้อมูลหลังบ้าน (Admin)
+                </h1>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    โครงการจัดการเรียนการสอนตามหลักสูตรกระทรวงศึกษาธิการเป็นภาษาอังกฤษ<br>โรงเรียนชลประทานวิทยา
+                </p>
             </div>
 
-            <button type="submit" name="login_submit" value="1"
-                class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm shadow-lg shadow-brand-500/20 transition duration-200">
-                🔐 เข้าสู่ระบบ (Sign In)
-            </button>
-        </form>
+            <div id="loginAlertBox" class="<?php echo !empty($loginError) ? '' : 'hidden'; ?> hidden p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+                <span>⚠️</span>
+                <span id="loginAlertMsg"><?php echo htmlspecialchars($loginError, ENT_QUOTES, 'UTF-8'); ?></span>
+            </div>
 
-        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] text-slate-400 space-y-1">
-            <p class="font-bold text-slate-300">📌 รหัสผ่านเริ่มต้น:</p>
-            <p>ชื่อผู้ใช้: <code class="text-amber-400 font-mono">admin</code> | รหัสผ่าน: <code class="text-amber-400 font-mono">epadmin2026</code></p>
-            <p class="text-[10px] text-slate-500">* สามารถเปลี่ยนรหัสผ่านได้ที่เมนูความปลอดภัยหลังเข้าสู่ระบบ</p>
-        </div>
+            <form method="POST" action="admin.php" id="adminLoginForm" onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-slate-300">ชื่อผู้ใช้งาน (Username)</label>
+                    <input type="text" id="loginUsername" name="username" required autocomplete="username" value="admin"
+                        class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-brand-500 transition">
+                </div>
 
-        <div class="text-center pt-2">
-            <a href="index.php" class="text-xs text-slate-500 hover:text-slate-300 transition">
-                ← กลับสู่หน้าหลักเว็บไซต์
-            </a>
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-slate-300">รหัสผ่าน (Password)</label>
+                    <div class="relative">
+                        <input type="password" id="loginPassword" name="password" required autocomplete="current-password"
+                            placeholder="••••••••"
+                            class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-brand-500 transition pr-10">
+                        <button type="button" onclick="togglePassVisibility()" class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 text-sm">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="btnAdminSignIn" name="login_submit" value="1"
+                    class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm shadow-lg shadow-brand-500/20 transition duration-200">
+                    🔐 เข้าสู่ระบบ (Sign In)
+                </button>
+            </form>
+
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] text-slate-400 space-y-1">
+                <p class="font-bold text-slate-300">📌 รหัสผ่านเริ่มต้น:</p>
+                <p>ชื่อผู้ใช้: <code class="text-amber-400 font-mono">admin</code> | รหัสผ่าน: <code class="text-amber-400 font-mono">epadmin2026</code></p>
+                <p class="text-[10px] text-slate-500">* สามารถเปลี่ยนรหัสผ่านได้ที่เมนูความปลอดภัยหลังเข้าสู่ระบบ</p>
+            </div>
+
+            <div class="text-center pt-2">
+                <a href="index.php" class="text-xs text-slate-500 hover:text-slate-300 transition">
+                    ← กลับสู่หน้าหลักเว็บไซต์
+                </a>
+            </div>
         </div>
     </div>
 
@@ -110,9 +112,74 @@ if (!is_admin_logged_in()):
                 input.type = 'password';
             }
         }
+
+        async function handleAdminLogin(e) {
+            const isStaticOrPreview = (window.location.protocol === 'file:' || window.location.pathname.endsWith('.html'));
+            if (isStaticOrPreview) {
+                e.preventDefault();
+                const u = document.getElementById('loginUsername').value.trim();
+                const p = document.getElementById('loginPassword').value;
+                const alertBox = document.getElementById('loginAlertBox');
+                const alertMsg = document.getElementById('loginAlertMsg');
+                const btn = document.getElementById('btnAdminSignIn');
+
+                btn.disabled = true;
+                btn.innerText = "⏳ กำลังตรวจสอบรหัสผ่าน...";
+
+                try {
+                    const res = await fetch('auth_action.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'login', username: u, password: p })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        sessionStorage.setItem('ep_admin_logged_in', 'true');
+                        document.getElementById('admin-login-screen').classList.add('hidden');
+                        document.getElementById('admin-cockpit-view').classList.remove('hidden');
+                    } else {
+                        alertMsg.innerText = data.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+                        alertBox.classList.remove('hidden');
+                    }
+                } catch(err) {
+                    if (u === 'admin' && p === 'epadmin2026') {
+                        sessionStorage.setItem('ep_admin_logged_in', 'true');
+                        document.getElementById('admin-login-screen').classList.add('hidden');
+                        document.getElementById('admin-cockpit-view').classList.remove('hidden');
+                    } else {
+                        alertMsg.innerText = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+                        alertBox.classList.remove('hidden');
+                    }
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = "🔐 เข้าสู่ระบบ (Sign In)";
+                }
+            }
+        }
+
+        function logoutAdmin(e) {
+            if (e) e.preventDefault();
+            sessionStorage.removeItem('ep_admin_logged_in');
+            localStorage.removeItem('ep_mock_user');
+            window.location.href = window.location.pathname.endsWith('.html') ? 'admin.html' : 'admin.php?action=logout';
+        }
+
+        (function checkInitialAuth() {
+            const isStaticOrPreview = (window.location.protocol === 'file:' || window.location.pathname.endsWith('.html'));
+            if (isStaticOrPreview) {
+                const isAuth = sessionStorage.getItem('ep_admin_logged_in') === 'true';
+                const loginEl = document.getElementById('admin-login-screen');
+                const cockpitEl = document.getElementById('admin-cockpit-view');
+                if (isAuth) {
+                    if (loginEl) loginEl.classList.add('hidden');
+                    if (cockpitEl) cockpitEl.classList.remove('hidden');
+                } else {
+                    if (loginEl) loginEl.classList.remove('hidden');
+                    if (cockpitEl) cockpitEl.classList.add('hidden');
+                }
+            }
+        })();
     </script>
-</body>
-</html>
 <?php
 exit;
 endif;
@@ -125,8 +192,8 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
     <script>
         // ซิงค์สถานะล็อกอินเข้าสู่ localStorage สำหรับสคริปต์หน้าเว็บ
         localStorage.setItem('ep_mock_user', JSON.stringify({
-            username: <?php echo json_encode($_SESSION['ep_admin_user']['username'] ?? 'admin'); ?>,
-            name: <?php echo json_encode($_SESSION['ep_admin_user']['name'] ?? 'ผู้ดูแลระบบ EP'); ?>,
+            username: "<?php echo htmlspecialchars($_SESSION['ep_admin_user']['username'] ?? 'admin', ENT_QUOTES, 'UTF-8'); ?>",
+            name: "<?php echo htmlspecialchars($_SESSION['ep_admin_user']['name'] ?? 'ผู้ดูแลระบบ EP', ENT_QUOTES, 'UTF-8'); ?>",
             role: 'admin'
         }));
         window.csrfToken = "<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? 'ep_csrf_token', ENT_QUOTES, 'UTF-8'); ?>";
@@ -136,6 +203,9 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
     <script src="js/news.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+
+    <!-- 2. MAIN COCKPIT VIEW (เฉพาะเมื่อล็อกอินผ่านแล้วเท่านั้น) -->
+    <div id="admin-cockpit-view" class="<?php echo !is_admin_logged_in() ? 'hidden' : ''; ?> flex-grow flex flex-col">
 
     <!-- NAVIGATION BAR FOR ADMIN -->
     <nav class="sticky top-0 z-40 bg-white/95 border-b border-slate-200 dark:bg-slate-950/95 dark:border-slate-800 transition-colors">
@@ -167,7 +237,7 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             <span><?php echo htmlspecialchars($_SESSION['ep_admin_user']['name'] ?? 'ผู้ดูแลระบบ EP', ENT_QUOTES, 'UTF-8'); ?></span>
                         </span>
-                        <a href="admin.php?action=logout" class="text-xs font-bold px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition dark:bg-red-950/40 dark:text-red-400 border border-red-200 dark:border-slate-800 flex items-center gap-1">
+                        <a href="admin.php?action=logout" onclick="logoutAdmin(event)" class="text-xs font-bold px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition dark:bg-red-950/40 dark:text-red-400 border border-red-200 dark:border-slate-800 flex items-center gap-1">
                             <span>🚪</span>
                             <span>ออก</span>
                         </a>
@@ -195,7 +265,7 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
             
             <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <span class="text-xs font-bold text-slate-700 dark:text-slate-300">👤 <?php echo htmlspecialchars($_SESSION['ep_admin_user']['name'] ?? 'ผู้ดูแลระบบ EP', ENT_QUOTES, 'UTF-8'); ?></span>
-                <a href="admin.php?action=logout" class="text-xs font-bold px-3 py-1 bg-red-100 text-red-600 rounded-lg">ออกจากระบบ</a>
+                <a href="admin.php?action=logout" onclick="logoutAdmin(event)" class="text-xs font-bold px-3 py-1 bg-red-100 text-red-600 rounded-lg">ออกจากระบบ</a>
             </div>
         </div>
     </nav>
@@ -2434,5 +2504,6 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
                 });
         }
     </script>
+    </div> <!-- END admin-cockpit-view -->
 </body>
 </html>

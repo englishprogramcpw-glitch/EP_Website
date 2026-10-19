@@ -12,8 +12,8 @@
     <script>
         // ซิงค์สถานะล็อกอินเข้าสู่ localStorage สำหรับสคริปต์หน้าเว็บ
         localStorage.setItem('ep_mock_user', JSON.stringify({
-            username: ,
-            name: ,
+            username: "",
+            name: "",
             role: 'admin'
         }));
         window.csrfToken = "";
@@ -175,6 +175,9 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
 
+    <!-- 2. MAIN COCKPIT VIEW (เฉพาะเมื่อล็อกอินผ่านแล้วเท่านั้น) -->
+    <div id="admin-cockpit-view" class=" flex-grow flex flex-col">
+
     <!-- NAVIGATION BAR FOR ADMIN -->
     <nav class="sticky top-0 z-40 bg-white/95 border-b border-slate-200 dark:bg-slate-950/95 dark:border-slate-800 transition-colors">
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -205,7 +208,7 @@
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             <span></span>
                         </span>
-                        <a href="admin.html?action=logout" class="text-xs font-bold px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition dark:bg-red-950/40 dark:text-red-400 border border-red-200 dark:border-slate-800 flex items-center gap-1">
+                        <a href="admin.html?action=logout" onclick="logoutAdmin(event)" class="text-xs font-bold px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition dark:bg-red-950/40 dark:text-red-400 border border-red-200 dark:border-slate-800 flex items-center gap-1">
                             <span>🚪</span>
                             <span>ออก</span>
                         </a>
@@ -233,7 +236,7 @@
             
             <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <span class="text-xs font-bold text-slate-700 dark:text-slate-300">👤 </span>
-                <a href="admin.html?action=logout" class="text-xs font-bold px-3 py-1 bg-red-100 text-red-600 rounded-lg">ออกจากระบบ</a>
+                <a href="admin.html?action=logout" onclick="logoutAdmin(event)" class="text-xs font-bold px-3 py-1 bg-red-100 text-red-600 rounded-lg">ออกจากระบบ</a>
             </div>
         </div>
     </nav>
@@ -2884,5 +2887,6 @@
                 });
         }
     </script>
+    </div> <!-- END admin-cockpit-view -->
 </body>
 </html>
