@@ -809,7 +809,7 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">LINE Official Account (LINE ID / URL)</label>
-                                        <input type="text" id="setContactLine" placeholder="@epcpw หรือ https://line.me/R/ti/p/@epcpw" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm">
+                                        <input type="text" id="setContactLine" placeholder="@730luhsj หรือ https://line.me/R/ti/p/@730luhsj" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm">
                                     </div>
                                 </div>
                                 <div>

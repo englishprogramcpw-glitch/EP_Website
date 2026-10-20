@@ -112,7 +112,7 @@ function processPHPContent(fileContent, pageTitle, currentPage) {
         const mapUrl = c.map_url || 'https://maps.google.com/?q=VGX6%2B88R+ตำบลบางตลาด+อำเภอปากเกร็ด+นนทบุรี';
         const fbVal = c.facebook || 'profile.php?id=100093686707861';
         const fbUrl = fbVal.startsWith('http') ? fbVal : 'https://www.facebook.com/' + fbVal.replace(/^\/+/, '');
-        const lineVal = c.line || '@epcpw';
+        const lineVal = c.line || '@730luhsj';
         const lineUrl = lineVal.startsWith('http') ? lineVal : 'https://line.me/R/ti/p/' + (lineVal.startsWith('@') ? lineVal : '@' + lineVal);
 
         content = content.replace(/<\?php\s+echo\s+\$settings\['contact'\]\['address_th'\];\s*\?>/g, addressTh);

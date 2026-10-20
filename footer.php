@@ -32,7 +32,7 @@
                         </p>
                         <p class="flex items-center gap-2">
                             <span class="text-emerald-400">💬</span>
-                            <a href="https://line.me/R/ti/p/@epcpw" target="_blank" class="hover:text-emerald-400 text-slate-400 font-semibold transition">LINE: @epcpw</a>
+                            <a href="https://line.me/R/ti/p/@730luhsj" target="_blank" class="hover:text-emerald-400 text-slate-400 font-semibold transition">LINE: @730luhsj</a>
                         </p>
                     </div>
                 </div>

@@ -112,7 +112,7 @@ $settings = json_decode(file_get_contents('data/db_site_settings.json'), true);
                                 <span class="lang-en hidden">LINE Official</span>
                             </strong>
                             <?php 
-                            $lineVal = !empty($settings['contact']['line']) ? $settings['contact']['line'] : '@epcpw';
+                            $lineVal = !empty($settings['contact']['line']) ? $settings['contact']['line'] : '@730luhsj';
                             $lineUrl = (strpos($lineVal, 'http') === 0) ? $lineVal : 'https://line.me/R/ti/p/' . (strpos($lineVal, '@') === 0 ? $lineVal : '@' . $lineVal);
                             ?>
                             <a href="<?php echo htmlspecialchars($lineUrl); ?>" target="_blank" class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 transition font-bold leading-none underline"><?php echo htmlspecialchars($lineVal); ?></a>
