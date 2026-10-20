@@ -216,23 +216,28 @@ function saveLoginSession(usr, displayName, role, displayNameEn) {
 
 function handleLogout() {
     localStorage.removeItem('ep_mock_user');
+    sessionStorage.removeItem('ep_admin_logged_in');
     
-    // ล้างเซสชันฝั่ง PHP เซิร์ฟเวอร์หลังบ้าน
-    fetch('sync_session.php', {
+    // ทำลายแถบแก้ไขหน้าเว็บสดทันทีเมื่อออกจากระบบ
+    const editorBar = document.getElementById('ep-editor-bar');
+    if (editorBar) editorBar.remove();
+    document.body.classList.remove('ep-editor-active');
+    
+    // ล้างเซสชันฝั่งหลังบ้าน
+    fetch('auth_action.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'logout' })
-    })
-    .then(() => {
+    }).finally(() => {
         const isEn = (localStorage.getItem('ep_lang') || 'th') === 'en';
         alert(isEn ? "👋 Logged out successfully" : "👋 ออกจากระบบเรียบร้อยแล้ว");
         updateLoginState();
-        // ถ้าอยู่หน้า Admin ให้เด้งกลับหน้าแรก
         if (window.location.pathname.includes('admin.html') || window.location.pathname.includes('admin.html')) {
             window.location.href = window.location.pathname.includes('preview/') ? 'index.html' : 'index.html';
+        } else {
+            window.location.reload();
         }
-    })
-    .catch(err => console.error('Failed to sync logout session:', err));
+    });
 }
 
 
@@ -276,9 +281,10 @@ function updateLoginState() {
             `;
         }
     } else {
+        // ปุ่มเข้าสู่ระบบสารสนเทศกลางของโรงเรียน (สำหรับนักเรียน ผู้ปกครอง และครู)
         if (desktopNav) {
             desktopNav.innerHTML = `
-                <button onclick="openLoginModal()" class="text-sm font-semibold px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition duration-200 font-sans">
+                <button onclick="openLoginModal()" class="text-sm font-semibold px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition duration-200 font-sans shadow-sm flex items-center gap-1.5">
                     <span class="lang-th">เข้าสู่ระบบ</span>
                     <span class="lang-en hidden">Login</span>
                 </button>
@@ -295,6 +301,15 @@ function updateLoginState() {
     }
     updateLanguageUI();
 }
+
+// --- ทางลัดลับเข้าสู่ระบบหลังบ้านสำหรับแอดมิน (Secret Shortcut: Ctrl + Shift + L) ---
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'L' || e.key === 'l')) {
+        e.preventDefault();
+        const targetUrl = window.location.pathname.endsWith('.html') ? 'admin.html' : 'admin.html';
+        window.location.href = targetUrl;
+    }
+});
 
 // --- 6. ฟังก์ชันจัดการฐานข้อมูลแบบไฟล์เดี่ยว (Flat-File JSON Database Manager) ---
 function getDbNews(callback) {

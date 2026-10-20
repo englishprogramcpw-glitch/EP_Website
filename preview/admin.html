@@ -4,32 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-    
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <script>
-        // ซิงค์สถานะล็อกอินเข้าสู่ localStorage สำหรับสคริปต์หน้าเว็บ
-        localStorage.setItem('ep_mock_user', JSON.stringify({
-            username: "",
-            name: "",
-            role: 'admin'
-        }));
-        window.csrfToken = "";
-    </script>
+    <title>เข้าสู่ระบบหลังบ้าน | English Program (EP) CPW</title>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เข้าสู่ระบบหลังบ้าน | English Program (EP) CPW</title>
 
-    
-    <meta name="robots" content="noindex, nofollow">
-    <div class="bg-amber-500 text-slate-950 font-bold text-xs py-2 px-4 text-center sticky top-0 z-50 flex items-center justify-center gap-2 shadow-md">
-        <span>🚧</span>
-        <span>โหมดปิดปรับปรุงกำลังเปิดใช้งาน (บุคคลภายนอกจะเห็นหน้าแจ้งปิดปรับปรุง ไม่สามารถดูข้อมูลหน้านี้ได้)</span>
-        <a href="admin.html" class="underline ml-2 bg-slate-950 text-white px-2.5 py-0.5 rounded-lg text-[11px] hover:bg-slate-800 transition">⚙️ ไปที่แผงควบคุมหลังบ้าน</a>
-    </div>
     
 
     <!-- CSRF Token สำหรับเรียกใช้ในการเซฟข้อมูล -->
@@ -170,16 +150,345 @@
         }
     </style>
 
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
+
+    <!-- 1. ADMIN LOGIN SCREEN (บังคับกรอกรหัสผ่านเสมอหากยังไม่ล็อกอิน) -->
+    <div id="admin-login-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-slate-950 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
+            <div class="text-center space-y-3">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-500 text-white font-black text-2xl font-english shadow-lg shadow-brand-500/30">
+                    EP
+                </div>
+                <h1 class="text-xl font-black text-white tracking-wide">
+                    ระบบจัดการข้อมูลหลังบ้าน (Admin)
+                </h1>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    โครงการจัดการเรียนการสอนตามหลักสูตรกระทรวงศึกษาธิการเป็นภาษาอังกฤษ<br>โรงเรียนชลประทานวิทยา
+                </p>
+            </div>
+
+            <div id="loginAlertBox" class=" hidden p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+                <span>⚠️</span>
+                <span id="loginAlertMsg"></span>
+            </div>
+
+            <form method="POST" action="admin.php" id="adminLoginForm" onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="preview_csrf_token">
+                
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-slate-300">ชื่อผู้ใช้งาน (Username)</label>
+                    <input type="text" id="loginUsername" name="username" required autocomplete="username" value="admin"
+                        class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-brand-500 transition">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-slate-300">รหัสผ่าน (Password)</label>
+                    <div class="relative">
+                        <input type="password" id="loginPassword" name="password" required autocomplete="current-password"
+                            placeholder="••••••••"
+                            class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-brand-500 transition pr-10">
+                        <button type="button" onclick="togglePassVisibility()" class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 text-sm">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="btnAdminSignIn" name="login_submit" value="1"
+                    class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm shadow-lg shadow-brand-500/20 transition duration-200">
+                    🔐 เข้าสู่ระบบ (Sign In)
+                </button>
+            </form>
+
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] text-slate-400 space-y-1">
+                <p class="font-bold text-slate-300">📌 รหัสผ่านเริ่มต้น:</p>
+                <p>ชื่อผู้ใช้: <code class="text-amber-400 font-mono">admin</code> | รหัสผ่าน: <code class="text-amber-400 font-mono">epadmin2026</code></p>
+                <p class="text-[10px] text-slate-500">* สามารถเปลี่ยนรหัสผ่านได้ที่เมนูความปลอดภัยหลังเข้าสู่ระบบ</p>
+            </div>
+
+            <div class="text-center pt-2">
+                <a href="index.html" class="text-xs text-slate-500 hover:text-slate-300 transition">
+                    ← กลับสู่หน้าหลักเว็บไซต์
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassVisibility() {
+            const input = document.getElementById('loginPassword');
+            if (input.type === 'password') {
+                input.type = 'text';
+            } else {
+                input.type = 'password';
+            }
+        }
+
+        async function handleAdminLogin(e) {
+            const isStaticOrPreview = (window.location.protocol === 'file:' || window.location.pathname.endsWith('.html'));
+            if (isStaticOrPreview) {
+                e.preventDefault();
+                const u = document.getElementById('loginUsername').value.trim();
+                const p = document.getElementById('loginPassword').value;
+                const alertBox = document.getElementById('loginAlertBox');
+                const alertMsg = document.getElementById('loginAlertMsg');
+                const btn = document.getElementById('btnAdminSignIn');
+
+                btn.disabled = true;
+                btn.innerText = "⏳ กำลังตรวจสอบรหัสผ่าน...";
+
+                try {
+                    const res = await fetch('auth_action.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'login', username: u, password: p })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        sessionStorage.setItem('ep_admin_logged_in', 'true');
+                        document.getElementById('admin-login-screen').classList.add('hidden');
+                        document.getElementById('admin-cockpit-view').classList.remove('hidden');
+                    } else {
+                        alertMsg.innerText = data.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+                        alertBox.classList.remove('hidden');
+                    }
+                } catch(err) {
+                    if (u === 'admin' && p === 'epadmin2026') {
+                        sessionStorage.setItem('ep_admin_logged_in', 'true');
+                        document.getElementById('admin-login-screen').classList.add('hidden');
+                        document.getElementById('admin-cockpit-view').classList.remove('hidden');
+                    } else {
+                        alertMsg.innerText = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+                        alertBox.classList.remove('hidden');
+                    }
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = "🔐 เข้าสู่ระบบ (Sign In)";
+                }
+            }
+        }
+
+        function logoutAdmin(e) {
+            if (e) e.preventDefault();
+            sessionStorage.removeItem('ep_admin_logged_in');
+            localStorage.removeItem('ep_mock_user');
+            fetch('auth_action.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'logout' })
+            }).finally(() => {
+                window.location.href = window.location.pathname.endsWith('.html') ? 'admin.html' : 'admin.php?action=logout';
+            });
+        }
+
+        function checkInitialAuth() {
+            const isStaticOrPreview = (window.location.protocol === 'file:' || window.location.pathname.endsWith('.html'));
+            if (isStaticOrPreview) {
+                const isAuth = sessionStorage.getItem('ep_admin_logged_in') === 'true';
+                const loginEl = document.getElementById('admin-login-screen');
+                const cockpitEl = document.getElementById('admin-cockpit-view');
+                if (isAuth) {
+                    if (loginEl) loginEl.classList.add('hidden');
+                    if (cockpitEl) cockpitEl.classList.remove('hidden');
+                } else {
+                    if (loginEl) loginEl.classList.remove('hidden');
+                    if (cockpitEl) cockpitEl.classList.add('hidden');
+                }
+            }
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkInitialAuth);
+        } else {
+            checkInitialAuth();
+        }
+    </script>
+    <style>
+        #admin-cockpit-view.hidden { display: none !important; }
+    </style>
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <script>
+        // ซิงค์สถานะล็อกอินเข้าสู่ localStorage สำหรับสคริปต์หน้าเว็บ (เฉพาะเมื่อยืนยันตัวตนสำเร็จ)
+        
+        localStorage.setItem('ep_mock_user', JSON.stringify({
+            username: "",
+            name: "",
+            role: 'admin'
+        }));
+        
+        if (sessionStorage.getItem('ep_admin_logged_in') === 'true') {
+            localStorage.setItem('ep_mock_user', JSON.stringify({
+                username: 'admin',
+                name: 'ผู้ดูแลระบบ EP',
+                role: 'admin'
+            }));
+        } else {
+            localStorage.removeItem('ep_mock_user');
+        }
+        
+        window.csrfToken = "preview_csrf_token";
+    </script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบหลังบ้าน | English Program (EP) CPW</title>
+
+    
+
+    <!-- CSRF Token สำหรับเรียกใช้ในการเซฟข้อมูล -->
+    <script>
+        window.csrfToken = "";
+        // ดักจับการเรียกใช้ fetch เพื่อส่ง CSRF Token ไปใน Header ของคำขอแบบ AJAX โดยอัตโนมัติ
+        (function() {
+            const originalFetch = window.fetch;
+            window.fetch = function(input, init) {
+                if (typeof input === 'string' && (input.includes('save_data.php') || input.includes('save_inline.php') || input.includes('auth_action.php'))) {
+                    init = init || {};
+                    init.headers = init.headers || {};
+                    init.headers['X-CSRF-Token'] = window.csrfToken;
+                }
+                return originalFetch(input, init);
+            };
+        })();
+    </script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Sarabun & Inter -->
+    <link rel="stylesheet" href="css/typography.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="js/main.js"></script>
+    <script src="js/editor.js" defer></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Sarabun', 'Inter', 'sans-serif'],
+                        english: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff', // Light Purple (Card backgrounds or button hover)
+                            100: '#ede9fe',
+                            500: '#1e3a8a', // School Navy Blue (Primary Blue)
+                            600: '#1e40af', // Mid Blue
+                            700: '#1d4ed8', // Royal Blue
+                            secondary: '#7c3aed', // EP Purple (Pink + Blue)
+                            accent: '#db2777', // School Pink (Highlight Pink)
+                            gold: '#db2777', // Replace gold highlight with School Pink
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --ease-out-craft: cubic-bezier(0.23, 1, 0.32, 1);
+            --ease-in-out-craft: cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        html { scroll-behavior: smooth; font-size: 17px; -webkit-text-size-adjust: 100%; }
+
+        /* Bilingual Typography & Word Breaking (Thai & English) */
+        body, p, span, div, td, th, li, a, label, dd, dt {
+            word-break: normal !important;
+            line-break: normal !important;
+            overflow-wrap: break-word !important;
+            text-wrap: pretty;
+        }
+
+        h1, h2, h3, h4, h5, h6, .text-balance, .hero-title {
+            text-wrap: balance !important;
+            word-break: normal !important;
+            line-break: normal !important;
+            hyphens: none !important;
+        }
+
+        .lang-en, [lang="en"], .font-english {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            word-break: normal !important;
+            overflow-wrap: break-word !important;
+            hyphens: manual;
+        }
+
+        .lang-th, [lang="th"], html[lang="th"] {
+            font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+            word-break: normal !important;
+            line-break: normal !important;
+            hyphens: none !important;
+        }
+
+        .medal-badge, .badge, th, .btn-print-sar, #yearTabsNav button, 
+        .view-switcher button, .whitespace-nowrap, .room-badge {
+            word-break: keep-all !important;
+            white-space: nowrap !important;
+        }
+
+        .thai-prefix, .name-prefix {
+            display: inline-block;
+            white-space: nowrap !important;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        .dark ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+        /* SISB-style Navigation Effects */
+        .nav-link-sisb {
+            position: relative;
+            transition: color 0.2s var(--ease-out-craft);
+        }
+        .nav-link-sisb::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #db2777; /* School Pink Accent */
+            transition: width 0.2s var(--ease-out-craft);
+        }
+        .nav-link-sisb:hover::after, .nav-link-sisb.active::after {
+            width: 100%;
+        }
+
+        /* SISB-style Card Hover effects */
+        .card-hover-sisb {
+            transition: all 0.3s var(--ease-out-craft);
+        }
+        .card-hover-sisb:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px -10px rgba(124, 58, 237, 0.15); /* Purple shadow */
+            border-color: rgba(219, 39, 119, 0.3); /* School Pink border */
+        }
+
+        /* Override Hero Slide transitions with custom ease-out and optimized timing */
+        .hero-slide {
+            transition: opacity 500ms var(--ease-out-craft) !important;
+        }
+    </style>
+
+    <script>
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="js/news.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
 
     <!-- 2. MAIN COCKPIT VIEW (เฉพาะเมื่อล็อกอินผ่านแล้วเท่านั้น) -->
-    <div id="admin-cockpit-view" class=" flex-grow flex flex-col">
+    <div id="admin-cockpit-view" class="hidden flex-grow flex flex-col">
 
     <!-- NAVIGATION BAR FOR ADMIN -->
-    <nav class="sticky top-0 z-40 bg-white/95 border-b border-slate-200 dark:bg-slate-950/95 dark:border-slate-800 transition-colors">
+    <nav class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-xs">
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo / Title -->
@@ -272,15 +581,15 @@
 
                 
                 <!-- SECURITY WARNING BANNER -->
-                <div id="security-warning-banner" class="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div id="security-warning-banner" class="bg-amber-50 border-2 border-amber-300 rounded-3xl p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
                         <span class="text-3xl">⚠️</span>
                         <div>
-                            <h4 class="font-bold text-amber-600 dark:text-amber-400 text-sm">คุณยังคงใช้รหัสผ่านเริ่มต้นของระบบ (epadmin2026)</h4>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">เพื่อความปลอดภัยของข้อมูลโครงการ EP บนเซิร์ฟเวอร์โรงเรียน กรุณาเปลี่ยนเป็นรหัสผ่านส่วนตัว</p>
+                            <h4 class="font-bold text-amber-950 text-sm">คุณยังคงใช้รหัสผ่านเริ่มต้นของระบบ (epadmin2026)</h4>
+                            <p class="text-xs text-amber-800 mt-0.5">เพื่อความปลอดภัยของข้อมูลโครงการ EP บนเซิร์ฟเวอร์โรงเรียน กรุณาเปลี่ยนเป็นรหัสผ่านส่วนตัว</p>
                         </div>
                     </div>
-                    <button onclick="switchAdminTab('security')" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl transition whitespace-nowrap shadow-sm">
+                    <button onclick="switchAdminTab('security')" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl transition whitespace-nowrap shadow-sm">
                         เปลี่ยนรหัสผ่านทันที
                     </button>
                 </div>
@@ -288,30 +597,30 @@
 
                 <!-- 1. DASHBOARD TAB -->
                 <div id="admin-tab-dashboard" class="space-y-6">
-                    <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div class="space-y-2">
-                            <h2 class="text-2xl font-black text-slate-900 dark:text-white">แผงควบคุมระบบจัดการข้อมูล</h2>
-                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">ภาพรวมสถิติและสถานะการเชื่อมโยงระบบหลังบ้านโครงการฯ ภาคภาษาอังกฤษ (EP)</p>
+                    <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div class="space-y-1">
+                            <h2 class="text-2xl font-black text-slate-900">แผงควบคุมระบบจัดการข้อมูล</h2>
+                            <p class="text-xs sm:text-sm text-slate-600">ภาพรวมสถิติและสถานะการเชื่อมโยงระบบหลังบ้านโครงการฯ ภาคภาษาอังกฤษ (EP)</p>
                         </div>
-                        <button id="btn-sync-news" onclick="triggerNewsSync()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 self-start sm:self-auto flex-shrink-0">
+                        <button id="btn-sync-news" onclick="triggerNewsSync()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 self-start sm:self-auto flex-shrink-0">
                             🔄 ดึงข่าวสาร & กิจกรรมล่าสุด
                         </button>
                     </div>
 
                     <!-- WEBSITE VISIBILITY & MAINTENANCE GATEWAY CARD -->
                     
-                    <div id="maintenance-status-card" class="rounded-3xl p-6 border transition-all duration-300 ">
+                    <div id="maintenance-status-card" class="rounded-3xl p-6 border-2 transition-all duration-300 shadow-sm bg-amber-50/90 border-amber-300">
                         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                            <div class="flex items-center gap-3">
-                                <span class="text-3xl" id="maint-icon"></span>
+                            <div class="flex items-center gap-3.5">
+                                <span class="text-3xl" id="maint-icon">🔒</span>
                                 <div>
                                     <div class="flex flex-wrap items-center gap-2">
-                                        <h3 class="font-black text-slate-900 dark:text-white text-base">สวิตช์ควบคุมการเผยแพร่เว็บไซต์ (Visibility Gateway)</h3>
-                                        <span id="maint-badge" class="text-[11px] px-2.5 py-0.5 rounded-full font-bold ">
-                                            
+                                        <h3 class="font-black text-slate-900 text-base">สวิตช์ควบคุมการเผยแพร่เว็บไซต์ (Visibility Gateway)</h3>
+                                        <span id="maint-badge" class="text-[11px] px-2.5 py-0.5 rounded-full font-bold shadow-xs bg-amber-500 text-slate-950">
+                                            🚧 สถานะ: ส่งไป Facebook (คนนอกไม่เห็นเว็บ)
                                         </span>
                                     </div>
-                                    <p id="maint-desc" class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                    <p id="maint-desc" class="text-xs text-slate-700 mt-1.5 font-medium leading-relaxed">
                                         
                                             ขณะนี้บุคคลภายนอกที่คลิกมาจากเว็บโรงเรียนจะถูก <strong>ส่งต่อไปยัง Facebook เพจ EP อัตโนมัติ</strong> (เฉพาะแอดมินที่ล็อกอินเท่านั้นที่ดูเว็บนี้ได้)
                                         
@@ -320,12 +629,12 @@
                                     </p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-                                <button type="button" onclick="toggleMaintenanceMode()" id="btnToggleMaint" class="px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-sm flex items-center gap-2 ">
-                                    <span id="btnToggleMaintIcon"></span>
-                                    <span id="btnToggleMaintText"></span>
+                            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end flex-shrink-0">
+                                <button type="button" onclick="toggleMaintenanceMode()" id="btnToggleMaint" class="px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-sm flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                                    <span id="btnToggleMaintIcon">🚀</span>
+                                    <span id="btnToggleMaintText">คลิกเพื่อเปิดเว็บสู่สาธารณะ</span>
                                 </button>
-                                <button type="button" onclick="switchAdminTab('security')" class="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                                <button type="button" onclick="switchAdminTab('security')" class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs">
                                     ⚙️ ตั้งค่า
                                 </button>
                             </div>
@@ -335,35 +644,35 @@
                     <!-- STATS GRID -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <!-- Stat 1 -->
-                        <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+                        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex items-center gap-4">
                             <span class="text-4xl">📰</span>
                             <div>
-                                <span class="block text-2xl font-black text-slate-900 dark:text-white" id="stat-news-count">0</span>
-                                <span class="text-xs text-slate-500 dark:text-slate-400">ข่าวและกิจกรรมในระบบ</span>
+                                <span class="block text-2xl font-black text-slate-900" id="stat-news-count">0</span>
+                                <span class="text-xs text-slate-500 font-medium">ข่าวและกิจกรรมในระบบ</span>
                             </div>
                         </div>
                         <!-- Stat 2 -->
-                        <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+                        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex items-center gap-4">
                             <span class="text-4xl">👨‍🏫</span>
                             <div>
-                                <span class="block text-2xl font-black text-slate-900 dark:text-white">10 คน</span>
-                                <span class="text-xs text-slate-500 dark:text-slate-400">คณะครูและบุคลากร EP</span>
+                                <span class="block text-2xl font-black text-slate-900">10 คน</span>
+                                <span class="text-xs text-slate-500 font-medium">คณะครูและบุคลากร EP</span>
                             </div>
                         </div>
                         <!-- Stat 3 -->
-                        <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+                        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex items-center gap-4">
                             <span class="text-4xl">🔗</span>
                             <div>
-                                <span class="block text-xs font-bold text-amber-500 dark:text-amber-400" id="stat-api-status">โหมดจำลองถิ่นฐาน</span>
-                                <span class="text-xs text-slate-500 dark:text-slate-400">สถานะฐานข้อมูลกลาง</span>
+                                <span class="block text-xs font-bold text-amber-600" id="stat-api-status">โหมดจำลองถิ่นฐาน</span>
+                                <span class="text-xs text-slate-500 font-medium">สถานะฐานข้อมูลกลาง</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- SYSTEM FEEDBACK INFO -->
-                    <div class="bg-blue-500/10 border border-blue-500/25 rounded-3xl p-6 space-y-3">
-                        <h4 class="font-bold text-brand-600 dark:text-blue-400 text-sm">💡 คู่มือการจัดการระบบ:</h4>
-                        <ul class="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside leading-relaxed">
+                    <div class="bg-blue-50/80 border border-blue-200 rounded-3xl p-6 space-y-3 shadow-xs">
+                        <h4 class="font-bold text-blue-900 text-sm">💡 คู่มือการจัดการระบบ:</h4>
+                        <ul class="text-xs text-slate-700 space-y-1.5 list-disc list-inside leading-relaxed">
                             <li><strong>การดึงข่าวสารและภาพกิจกรรม</strong>: ระบบจะดึงข่าวจากเว็บไซต์โรงเรียนกลาง (ที่มีคำค้นหา EP) และแท็บ `News` / `Activities` ใน Google Sheet อัตโนมัติ โดยคลิกปุ่ม <strong>"ดึงข่าวสาร & กิจกรรมล่าสุด"</strong> ด้านบนนี้</li>
                             <li><strong>การแก้ไขเนื้อหาหน้าหลักและค่าเทอม</strong>: แก้ไขข้อมูลใน Google Sheets แล้วกดปุ่ม <strong>"ซิงค์ข้อมูลจาก Google Sheet"</strong> ในหน้าเมนู <strong>"จัดการเนื้อหาเว็บไซต์"</strong></li>
                             <li><strong>การแก้ไขข้อมูลบุคลากร</strong>: ซิงค์จากฐานข้อมูลทะเบียนโรงเรียน หรือนำเข้าไฟล์ตาราง Excel รายชื่อครูได้โดยตรงในเมนู <strong>"จัดการข้อมูลบุคลากร"</strong></li>
@@ -921,7 +1230,7 @@
                         <form id="maintSettingsForm" onsubmit="handleSaveMaintenanceSettings(event)" class="max-w-xl space-y-5">
                             <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
                                 <label class="flex items-center gap-3 cursor-pointer">
-                                    <input type="checkbox" id="maint_enabled" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500" >
+                                    <input type="checkbox" id="maint_enabled" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500" checked>
                                     <span class="text-sm font-bold text-slate-900 dark:text-white">เปิดใช้งานโหมดปิดปรับปรุง (ซ่อนเว็บไซต์จากบุคคลภายนอก)</span>
                                 </label>
                                 <p class="text-xs text-slate-500 dark:text-slate-400 pl-8">
@@ -1122,10 +1431,10 @@
                     <span>•</span>
                     <a href="https://www.cpw.ac.th" target="_blank" class="hover:text-slate-400 transition-colors">www.cpw.ac.th</a>
                     <span>•</span>
-                    <a href="admin.html" title="ระบบจัดการข้อมูลสำหรับผู้ดูแลระบบ (Admin)" class="hover:text-slate-400 opacity-60 hover:opacity-100 transition-opacity inline-flex items-center gap-1">
+                    <a href="admin.html" title="ระบบจัดการหลังบ้านเจ้าหน้าที่ (ทางลัด: Ctrl+Shift+L)" class="hover:text-slate-400 opacity-25 hover:opacity-90 transition-opacity inline-flex items-center gap-1 text-[11px]">
                         <span>🔒</span>
-                        <span class="lang-th">ระบบเจ้าหน้าที่</span>
-                        <span class="lang-en hidden">Staff Portal</span>
+                        <span class="lang-th">สำหรับเจ้าหน้าที่</span>
+                        <span class="lang-en hidden">Staff</span>
                     </a>
                 </p>
             </div>
@@ -1362,19 +1671,6 @@
                             </span>
                         </div>
                     </div>
-                </a>
-            </div>
-
-            <!-- สำหรับเจ้าหน้าที่ผู้ดูแลระบบโครงการ EP -->
-            <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-center space-y-2">
-                <span class="block text-[11px] text-slate-400">
-                    <span class="lang-th">สำหรับครูและเจ้าหน้าที่ผู้ดูแลระบบโครงการ EP</span>
-                    <span class="lang-en hidden">For teachers and EP program administrators</span>
-                </span>
-                <a href="admin.html" class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-500 hover:text-brand-600 dark:text-blue-400 dark:hover:text-blue-300 underline">
-                    <span>🔒</span>
-                    <span class="lang-th">เข้าสู่ระบบจัดการข้อมูลหลังบ้าน (Admin Login)</span>
-                    <span class="lang-en hidden">Access Admin Management Portal</span>
                 </a>
             </div>
         </div>
@@ -1718,7 +2014,7 @@
         }
 
         // จัดการสลับโหมดเผยแพร่เว็บไซต์ / ส่งไป Facebook
-        let isMaintenanceActive = "" === '1';
+        let isMaintenanceActive = "1" === '1';
 
         // สั่งอัปเดต UI ให้ตรงกับสถานะทันทีเมื่อโหลดสคริปต์
         document.addEventListener('DOMContentLoaded', () => {
@@ -1771,7 +2067,7 @@
             const chkEnabled = document.getElementById('maint_enabled');
 
             if (config.enabled) {
-                if (card) card.className = "rounded-3xl p-6 border transition-all duration-300 bg-amber-500/10 border-amber-500/30";
+                if (card) card.className = "rounded-3xl p-6 border-2 transition-all duration-300 shadow-sm bg-amber-50/90 border-amber-300";
                 if (icon) icon.innerText = "🔒";
                 if (badge) {
                     badge.className = "text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-amber-500 text-slate-950";
@@ -1783,10 +2079,10 @@
                 if (btnText) btnText.innerText = "คลิกเพื่อเปิดเว็บสู่สาธารณะ";
                 if (chkEnabled) chkEnabled.checked = true;
             } else {
-                if (card) card.className = "rounded-3xl p-6 border transition-all duration-300 bg-emerald-500/10 border-emerald-500/30";
+                if (card) card.className = "rounded-3xl p-6 border-2 transition-all duration-300 shadow-sm bg-emerald-50/90 border-emerald-300";
                 if (icon) icon.innerText = "🌐";
                 if (badge) {
-                    badge.className = "text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-500 text-white";
+                    badge.className = "text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-600 text-white";
                     badge.innerText = "🟢 สถานะ: ออนไลน์สู่สาธารณะ (เปิดให้ทุกคนเข้าชม)";
                 }
                 if (desc) desc.innerText = "ขณะนี้เปิดให้ทุกคนเข้าชมเว็บไซต์โครงการ EP ตัวจริงได้ตามปกติ";

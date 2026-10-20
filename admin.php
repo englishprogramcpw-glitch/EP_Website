@@ -225,16 +225,20 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
         window.csrfToken = "<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? 'ep_csrf_token', ENT_QUOTES, 'UTF-8'); ?>";
     </script>
     <?php include 'head.php'; ?>
+    <script>
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="js/news.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
 
     <!-- 2. MAIN COCKPIT VIEW (เฉพาะเมื่อล็อกอินผ่านแล้วเท่านั้น) -->
     <div id="admin-cockpit-view" class="<?php echo !is_admin_logged_in() ? 'hidden' : ''; ?> flex-grow flex flex-col">
 
     <!-- NAVIGATION BAR FOR ADMIN -->
-    <nav class="sticky top-0 z-40 bg-white/95 border-b border-slate-200 dark:bg-slate-950/95 dark:border-slate-800 transition-colors">
+    <nav class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-xs">
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo / Title -->
@@ -327,15 +331,15 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
 
                 <?php if (!empty($_SESSION['ep_admin_user']['must_change'])): ?>
                 <!-- SECURITY WARNING BANNER -->
-                <div id="security-warning-banner" class="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div id="security-warning-banner" class="bg-amber-50 border-2 border-amber-300 rounded-3xl p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
                         <span class="text-3xl">⚠️</span>
                         <div>
-                            <h4 class="font-bold text-amber-600 dark:text-amber-400 text-sm">คุณยังคงใช้รหัสผ่านเริ่มต้นของระบบ (epadmin2026)</h4>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">เพื่อความปลอดภัยของข้อมูลโครงการ EP บนเซิร์ฟเวอร์โรงเรียน กรุณาเปลี่ยนเป็นรหัสผ่านส่วนตัว</p>
+                            <h4 class="font-bold text-amber-950 text-sm">คุณยังคงใช้รหัสผ่านเริ่มต้นของระบบ (epadmin2026)</h4>
+                            <p class="text-xs text-amber-800 mt-0.5">เพื่อความปลอดภัยของข้อมูลโครงการ EP บนเซิร์ฟเวอร์โรงเรียน กรุณาเปลี่ยนเป็นรหัสผ่านส่วนตัว</p>
                         </div>
                     </div>
-                    <button onclick="switchAdminTab('security')" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl transition whitespace-nowrap shadow-sm">
+                    <button onclick="switchAdminTab('security')" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl transition whitespace-nowrap shadow-sm">
                         เปลี่ยนรหัสผ่านทันที
                     </button>
                 </div>
@@ -343,12 +347,12 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
 
                 <!-- 1. DASHBOARD TAB -->
                 <div id="admin-tab-dashboard" class="space-y-6">
-                    <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div class="space-y-2">
-                            <h2 class="text-2xl font-black text-slate-900 dark:text-white">แผงควบคุมระบบจัดการข้อมูล</h2>
-                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">ภาพรวมสถิติและสถานะการเชื่อมโยงระบบหลังบ้านโครงการฯ ภาคภาษาอังกฤษ (EP)</p>
+                    <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div class="space-y-1">
+                            <h2 class="text-2xl font-black text-slate-900">แผงควบคุมระบบจัดการข้อมูล</h2>
+                            <p class="text-xs sm:text-sm text-slate-600">ภาพรวมสถิติและสถานะการเชื่อมโยงระบบหลังบ้านโครงการฯ ภาคภาษาอังกฤษ (EP)</p>
                         </div>
-                        <button id="btn-sync-news" onclick="triggerNewsSync()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 self-start sm:self-auto flex-shrink-0">
+                        <button id="btn-sync-news" onclick="triggerNewsSync()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 self-start sm:self-auto flex-shrink-0">
                             🔄 ดึงข่าวสาร & กิจกรรมล่าสุด
                         </button>
                     </div>
@@ -359,18 +363,18 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
                     $isMaintActive = !empty($mConfig['enabled']);
                     $isRedirectFb = !isset($mConfig['redirect_to_facebook']) || $mConfig['redirect_to_facebook'] !== false;
                     ?>
-                    <div id="maintenance-status-card" class="rounded-3xl p-6 border transition-all duration-300 <?php echo $isMaintActive ? 'bg-amber-500/10 border-amber-500/30' : 'bg-emerald-500/10 border-emerald-500/30'; ?>">
+                    <div id="maintenance-status-card" class="rounded-3xl p-6 border-2 transition-all duration-300 shadow-sm <?php echo $isMaintActive ? 'bg-amber-50/90 border-amber-300' : 'bg-emerald-50/90 border-emerald-300'; ?>">
                         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-3.5">
                                 <span class="text-3xl" id="maint-icon"><?php echo $isMaintActive ? '🔒' : '🌐'; ?></span>
                                 <div>
                                     <div class="flex flex-wrap items-center gap-2">
-                                        <h3 class="font-black text-slate-900 dark:text-white text-base">สวิตช์ควบคุมการเผยแพร่เว็บไซต์ (Visibility Gateway)</h3>
-                                        <span id="maint-badge" class="text-[11px] px-2.5 py-0.5 rounded-full font-bold <?php echo $isMaintActive ? 'bg-amber-500 text-slate-950' : 'bg-emerald-500 text-white'; ?>">
+                                        <h3 class="font-black text-slate-900 text-base">สวิตช์ควบคุมการเผยแพร่เว็บไซต์ (Visibility Gateway)</h3>
+                                        <span id="maint-badge" class="text-[11px] px-2.5 py-0.5 rounded-full font-bold shadow-xs <?php echo $isMaintActive ? 'bg-amber-500 text-slate-950' : 'bg-emerald-600 text-white'; ?>">
                                             <?php echo $isMaintActive ? '🚧 สถานะ: ส่งไป Facebook (คนนอกไม่เห็นเว็บ)' : '🟢 สถานะ: ออนไลน์สู่สาธารณะ (เปิดให้ทุกคนเข้าชม)'; ?>
                                         </span>
                                     </div>
-                                    <p id="maint-desc" class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                    <p id="maint-desc" class="text-xs text-slate-700 mt-1.5 font-medium leading-relaxed">
                                         <?php if ($isMaintActive): ?>
                                             ขณะนี้บุคคลภายนอกที่คลิกมาจากเว็บโรงเรียนจะถูก <strong>ส่งต่อไปยัง Facebook เพจ EP อัตโนมัติ</strong> (เฉพาะแอดมินที่ล็อกอินเท่านั้นที่ดูเว็บนี้ได้)
                                         <?php else: ?>
@@ -379,12 +383,12 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
                                     </p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end flex-shrink-0">
                                 <button type="button" onclick="toggleMaintenanceMode()" id="btnToggleMaint" class="px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-sm flex items-center gap-2 <?php echo $isMaintActive ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-amber-500 hover:bg-amber-600 text-slate-950'; ?>">
                                     <span id="btnToggleMaintIcon"><?php echo $isMaintActive ? '🚀' : '🔒'; ?></span>
                                     <span id="btnToggleMaintText"><?php echo $isMaintActive ? 'คลิกเพื่อเปิดเว็บสู่สาธารณะ' : 'คลิกเพื่อส่งต่อไป Facebook'; ?></span>
                                 </button>
-                                <button type="button" onclick="switchAdminTab('security')" class="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                                <button type="button" onclick="switchAdminTab('security')" class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs">
                                     ⚙️ ตั้งค่า
                                 </button>
                             </div>
@@ -394,35 +398,35 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
                     <!-- STATS GRID -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <!-- Stat 1 -->
-                        <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+                        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex items-center gap-4">
                             <span class="text-4xl">📰</span>
                             <div>
-                                <span class="block text-2xl font-black text-slate-900 dark:text-white" id="stat-news-count">0</span>
-                                <span class="text-xs text-slate-500 dark:text-slate-400">ข่าวและกิจกรรมในระบบ</span>
+                                <span class="block text-2xl font-black text-slate-900" id="stat-news-count">0</span>
+                                <span class="text-xs text-slate-500 font-medium">ข่าวและกิจกรรมในระบบ</span>
                             </div>
                         </div>
                         <!-- Stat 2 -->
-                        <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+                        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex items-center gap-4">
                             <span class="text-4xl">👨‍🏫</span>
                             <div>
-                                <span class="block text-2xl font-black text-slate-900 dark:text-white">10 คน</span>
-                                <span class="text-xs text-slate-500 dark:text-slate-400">คณะครูและบุคลากร EP</span>
+                                <span class="block text-2xl font-black text-slate-900">10 คน</span>
+                                <span class="text-xs text-slate-500 font-medium">คณะครูและบุคลากร EP</span>
                             </div>
                         </div>
                         <!-- Stat 3 -->
-                        <div class="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+                        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex items-center gap-4">
                             <span class="text-4xl">🔗</span>
                             <div>
-                                <span class="block text-xs font-bold text-amber-500 dark:text-amber-400" id="stat-api-status">โหมดจำลองถิ่นฐาน</span>
-                                <span class="text-xs text-slate-500 dark:text-slate-400">สถานะฐานข้อมูลกลาง</span>
+                                <span class="block text-xs font-bold text-amber-600" id="stat-api-status">โหมดจำลองถิ่นฐาน</span>
+                                <span class="text-xs text-slate-500 font-medium">สถานะฐานข้อมูลกลาง</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- SYSTEM FEEDBACK INFO -->
-                    <div class="bg-blue-500/10 border border-blue-500/25 rounded-3xl p-6 space-y-3">
-                        <h4 class="font-bold text-brand-600 dark:text-blue-400 text-sm">💡 คู่มือการจัดการระบบ:</h4>
-                        <ul class="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside leading-relaxed">
+                    <div class="bg-blue-50/80 border border-blue-200 rounded-3xl p-6 space-y-3 shadow-xs">
+                        <h4 class="font-bold text-blue-900 text-sm">💡 คู่มือการจัดการระบบ:</h4>
+                        <ul class="text-xs text-slate-700 space-y-1.5 list-disc list-inside leading-relaxed">
                             <li><strong>การดึงข่าวสารและภาพกิจกรรม</strong>: ระบบจะดึงข่าวจากเว็บไซต์โรงเรียนกลาง (ที่มีคำค้นหา EP) และแท็บ `News` / `Activities` ใน Google Sheet อัตโนมัติ โดยคลิกปุ่ม <strong>"ดึงข่าวสาร & กิจกรรมล่าสุด"</strong> ด้านบนนี้</li>
                             <li><strong>การแก้ไขเนื้อหาหน้าหลักและค่าเทอม</strong>: แก้ไขข้อมูลใน Google Sheets แล้วกดปุ่ม <strong>"ซิงค์ข้อมูลจาก Google Sheet"</strong> ในหน้าเมนู <strong>"จัดการเนื้อหาเว็บไซต์"</strong></li>
                             <li><strong>การแก้ไขข้อมูลบุคลากร</strong>: ซิงค์จากฐานข้อมูลทะเบียนโรงเรียน หรือนำเข้าไฟล์ตาราง Excel รายชื่อครูได้โดยตรงในเมนู <strong>"จัดการข้อมูลบุคลากร"</strong></li>
@@ -1414,7 +1418,7 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
             const chkEnabled = document.getElementById('maint_enabled');
 
             if (config.enabled) {
-                if (card) card.className = "rounded-3xl p-6 border transition-all duration-300 bg-amber-500/10 border-amber-500/30";
+                if (card) card.className = "rounded-3xl p-6 border-2 transition-all duration-300 shadow-sm bg-amber-50/90 border-amber-300";
                 if (icon) icon.innerText = "🔒";
                 if (badge) {
                     badge.className = "text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-amber-500 text-slate-950";
@@ -1426,10 +1430,10 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
                 if (btnText) btnText.innerText = "คลิกเพื่อเปิดเว็บสู่สาธารณะ";
                 if (chkEnabled) chkEnabled.checked = true;
             } else {
-                if (card) card.className = "rounded-3xl p-6 border transition-all duration-300 bg-emerald-500/10 border-emerald-500/30";
+                if (card) card.className = "rounded-3xl p-6 border-2 transition-all duration-300 shadow-sm bg-emerald-50/90 border-emerald-300";
                 if (icon) icon.innerText = "🌐";
                 if (badge) {
-                    badge.className = "text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-500 text-white";
+                    badge.className = "text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-600 text-white";
                     badge.innerText = "🟢 สถานะ: ออนไลน์สู่สาธารณะ (เปิดให้ทุกคนเข้าชม)";
                 }
                 if (desc) desc.innerText = "ขณะนี้เปิดให้ทุกคนเข้าชมเว็บไซต์โครงการ EP ตัวจริงได้ตามปกติ";

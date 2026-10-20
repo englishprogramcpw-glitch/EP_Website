@@ -92,13 +92,10 @@ function processPHPContent(fileContent, pageTitle, currentPage) {
     }
     content = content.replace(/<\?php\s+echo\s+htmlspecialchars\(\$_SESSION\['csrf_token'\][\s\S]*?\?>/g, 'preview_csrf_token');
     content = content.replace(/<\?php\s+echo\s+!empty\(\$isMaintActive\)\s*\?\s*'1'\s*:\s*'0';\s*\?>/g, isMaintActive ? '1' : '0');
-    content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'🚀'\s*:\s*'🔒';\s*\?>/g, isMaintActive ? '🚀' : '🔒');
-    content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'คลิกเพื่อเปิดเว็บสู่สาธารณะ'\s*:\s*'คลิกเพื่อส่งต่อไป Facebook';\s*\?>/g, isMaintActive ? 'คลิกเพื่อเปิดเว็บสู่สาธารณะ' : 'คลิกเพื่อส่งต่อไป Facebook');
-    content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'🔒'\s*:\s*'🌐';\s*\?>/g, isMaintActive ? '🔒' : '🌐');
-    content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'🚧 สถานะ: ส่งไป Facebook \(คนนอกไม่เห็นเว็บ\)'\s*:\s*'🟢 สถานะ: ออนไลน์สู่สาธารณะ \(เปิดให้ทุกคนเข้าชม\)';\s*\?>/g, isMaintActive ? '🚧 สถานะ: ส่งไป Facebook (คนนอกไม่เห็นเว็บ)' : '🟢 สถานะ: ออนไลน์สู่สาธารณะ (เปิดให้ทุกคนเข้าชม)');
-    content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'bg-amber-500\/10 border-amber-500\/30'\s*:\s*'bg-emerald-500\/10 border-emerald-500\/30';\s*\?>/g, isMaintActive ? 'bg-amber-500/10 border-amber-500/30' : 'bg-emerald-500/10 border-emerald-500/30');
-    content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'bg-amber-500 text-slate-950'\s*:\s*'bg-emerald-500 text-white';\s*\?>/g, isMaintActive ? 'bg-amber-500 text-slate-950' : 'bg-emerald-500 text-white');
-    content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'bg-emerald-600 hover:bg-emerald-700 text-white'\s*:\s*'bg-amber-500 hover:bg-amber-600 text-slate-950';\s*\?>/g, isMaintActive ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-amber-500 hover:bg-amber-600 text-slate-950');
+    // Generic resolver for all $isMaintActive ? 'A' : 'B' expressions
+    content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*['"]([\s\S]*?)['"]\s*:\s*['"]([\s\S]*?)['"];\s*\?>/g, (match, optA, optB) => {
+        return isMaintActive ? optA : optB;
+    });
 
     // Remove EP_ADMIN_PREVIEWING_MAINTENANCE banner from preview pages
     content = content.replace(/<\?php\s+if\s*\(defined\('EP_ADMIN_PREVIEWING_MAINTENANCE'\)\):\s*\?>[\s\S]*?<\?php\s+endif;\s*\?>/g, '');
