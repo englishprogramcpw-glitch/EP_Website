@@ -100,6 +100,32 @@ function processPHPContent(fileContent, pageTitle, currentPage) {
     // Remove EP_ADMIN_PREVIEWING_MAINTENANCE banner from preview pages
     content = content.replace(/<\?php\s+if\s*\(defined\('EP_ADMIN_PREVIEWING_MAINTENANCE'\)\):\s*\?>[\s\S]*?<\?php\s+endif;\s*\?>/g, '');
 
+    // 4.9 Evaluate contact settings expressions for contact.php
+    if (content.includes("$settings['contact']")) {
+        const c = (settings && settings.contact) || {};
+        const phone = c.phone || '0 2583 5444';
+        const email = c.email || 'ep@cpw.ac.th';
+        const addressTh = c.address_th || 'โรงเรียนชลประทานวิทยา เลขที่ 201 หมู่ 1 ถนนติวานนท์ ตำบลบางตลาด อำเภอปากเกร็ด จังหวัดนนทบุรี 11120';
+        const addressEn = c.address_en || 'Chonprathanwittaya School, 201 Moo 1 Tiwanon Road, Bang Talat, Pak Kret, Nonthaburi 11120';
+        const guideTh = c.building_guide_th || 'อาคารโครงการฯ ภาคภาษาอังกฤษ (EP) พิกัด Plus Code: VGX6+88R เข้าประตู 1 (ฝั่งถนนติวานนท์) ตรงเข้ามาผ่านวงเวียน จะพบอาคารรูปตัว U ของโครงการ EP';
+        const guideEn = c.building_guide_en || 'English Program (EP) Building, Google Plus Code: VGX6+88R. Enter Gate 1 (Tiwanon Rd.) and proceed straight past the roundabout to the U-shaped EP Building.';
+        const mapUrl = c.map_url || 'https://maps.google.com/?q=VGX6%2B88R+ตำบลบางตลาด+อำเภอปากเกร็ด+นนทบุรี';
+        const fbVal = c.facebook || 'profile.php?id=100093686707861';
+        const fbUrl = fbVal.startsWith('http') ? fbVal : 'https://www.facebook.com/' + fbVal.replace(/^\/+/, '');
+
+        content = content.replace(/<\?php\s+echo\s+\$settings\['contact'\]\['address_th'\];\s*\?>/g, addressTh);
+        content = content.replace(/<\?php\s+echo\s+\$settings\['contact'\]\['address_en'\];\s*\?>/g, addressEn);
+        content = content.replace(/<\?php\s+echo\s+\$settings\['contact'\]\['phone'\];\s*\?>/g, phone);
+        content = content.replace(/<\?php\s+echo\s+\$settings\['contact'\]\['email'\];\s*\?>/g, email);
+        
+        content = content.replace(/<\?php\s+\$fbVal\s*=[\s\S]*?\$fbUrl\s*=[\s\S]*?\?>/g, '');
+        content = content.replace(/<\?php\s+echo\s+htmlspecialchars\(\$fbUrl\);\s*\?>/g, fbUrl);
+
+        content = content.replace(/<\?php\s+echo\s+isset\(\$settings\['contact'\]\['building_guide_th'\]\)[\s\S]*?\?>/g, guideTh);
+        content = content.replace(/<\?php\s+echo\s+isset\(\$settings\['contact'\]\['building_guide_en'\]\)[\s\S]*?\?>/g, guideEn);
+        content = content.replace(/<\?php\s+echo\s+isset\(\$settings\['contact'\]\['map_url'\]\)[\s\S]*?\?>/g, mapUrl);
+    }
+
     // Ensure admin cockpit view starts with 'hidden' in preview HTML
     content = content.replace(/id="admin-cockpit-view"\s+class="[^"]*"/g, 'id="admin-cockpit-view" class="hidden flex-grow flex flex-col"');
 
@@ -135,6 +161,7 @@ function compile(silent = false) {
     if (fs.existsSync(settingsPath)) {
         try {
             currentSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+            settings = currentSettings;
         } catch (e) {
             console.error('Error loading db_site_settings.json:', e);
         }
