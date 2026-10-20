@@ -3,9 +3,37 @@
  * ponytail: ใช้ฟีเจอร์ contenteditable ดั้งเดิม และ window.prompt() แทน UI ซับซ้อน
  */
 (function() {
-    // รันเฉพาะผู้ใช้ที่เป็น admin เท่านั้น
-    const user = JSON.parse(localStorage.getItem('ep_mock_user') || '{}');
-    if (user.role !== 'admin') return;
+    // ฟังก์ชันตรวจสอบสิทธิ์แอดมินอย่างเคร่งครัด
+    function hasAdminAuth() {
+        try {
+            const user = JSON.parse(localStorage.getItem('ep_mock_user') || '{}');
+            const sessionAuth = sessionStorage.getItem('ep_admin_logged_in') === 'true';
+            // ในโหมด Static Preview ต้องมีทั้ง role admin และสถานะล็อกอินใน sessionStorage
+            if (window.location.protocol === 'file:' || window.location.pathname.endsWith('.html')) {
+                return user.role === 'admin' && sessionAuth;
+            }
+            return user.role === 'admin';
+        } catch(e) {
+            return false;
+        }
+    }
+
+    if (!hasAdminAuth()) {
+        const existingBar = document.getElementById('ep-editor-bar');
+        if (existingBar) existingBar.remove();
+        document.body.classList.remove('ep-editor-active');
+        return;
+    }
+
+    // ตรวจจับการออกจากระบบจากแท็บอื่นหรือสคริปต์อื่นเพื่อทำลายแถบทันที
+    window.addEventListener('storage', () => {
+        if (!hasAdminAuth()) {
+            const bar = document.getElementById('ep-editor-bar');
+            if (bar) bar.remove();
+            document.body.classList.remove('ep-editor-active');
+            editMode = false;
+        }
+    });
 
     let editMode = false;
     let originalValues = {};

@@ -59,18 +59,5 @@
                     </div>
                 </a>
             </div>
-
-            <!-- สำหรับเจ้าหน้าที่ผู้ดูแลระบบโครงการ EP -->
-            <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-center space-y-2">
-                <span class="block text-[11px] text-slate-400">
-                    <span class="lang-th">สำหรับครูและเจ้าหน้าที่ผู้ดูแลระบบโครงการ EP</span>
-                    <span class="lang-en hidden">For teachers and EP program administrators</span>
-                </span>
-                <a href="admin.php" class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-500 hover:text-brand-600 dark:text-blue-400 dark:hover:text-blue-300 underline">
-                    <span>🔒</span>
-                    <span class="lang-th">เข้าสู่ระบบจัดการข้อมูลหลังบ้าน (Admin Login)</span>
-                    <span class="lang-en hidden">Access Admin Management Portal</span>
-                </a>
-            </div>
         </div>
     </div>

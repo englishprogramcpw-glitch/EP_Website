@@ -103,6 +103,9 @@ function processPHPContent(fileContent, pageTitle, currentPage) {
     // Remove EP_ADMIN_PREVIEWING_MAINTENANCE banner from preview pages
     content = content.replace(/<\?php\s+if\s*\(defined\('EP_ADMIN_PREVIEWING_MAINTENANCE'\)\):\s*\?>[\s\S]*?<\?php\s+endif;\s*\?>/g, '');
 
+    // Ensure admin cockpit view starts with 'hidden' in preview HTML
+    content = content.replace(/id="admin-cockpit-view"\s+class="[^"]*"/g, 'id="admin-cockpit-view" class="hidden flex-grow flex flex-col"');
+
     // 5. Clean up any remaining php blocks
     content = content.replace(/<\?php[\s\S]*?\?>/g, '');
 

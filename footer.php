@@ -159,10 +159,10 @@
                     <span>•</span>
                     <a href="https://www.cpw.ac.th" target="_blank" class="hover:text-slate-400 transition-colors">www.cpw.ac.th</a>
                     <span>•</span>
-                    <a href="admin.php" title="ระบบจัดการข้อมูลสำหรับผู้ดูแลระบบ (Admin)" class="hover:text-slate-400 opacity-60 hover:opacity-100 transition-opacity inline-flex items-center gap-1">
+                    <a href="admin.php" title="ระบบจัดการหลังบ้านเจ้าหน้าที่ (ทางลัด: Ctrl+Shift+L)" class="hover:text-slate-400 opacity-25 hover:opacity-90 transition-opacity inline-flex items-center gap-1 text-[11px]">
                         <span>🔒</span>
-                        <span class="lang-th">ระบบเจ้าหน้าที่</span>
-                        <span class="lang-en hidden">Staff Portal</span>
+                        <span class="lang-th">สำหรับเจ้าหน้าที่</span>
+                        <span class="lang-en hidden">Staff</span>
                     </a>
                 </p>
             </div>

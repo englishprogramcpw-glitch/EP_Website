@@ -30,6 +30,13 @@ if ($action === 'login') {
     exit;
 }
 
+// จัดการคำขอออกจากระบบผ่าน API
+if ($action === 'logout') {
+    admin_logout();
+    echo json_encode(['success' => true, 'message' => 'ออกจากระบบเรียบร้อยแล้ว']);
+    exit;
+}
+
 // 3. ตรวจสอบสถานะการล็อกอินสำหรับการกระทำอื่นๆ
 if (!is_admin_logged_in()) {
     http_response_code(401);

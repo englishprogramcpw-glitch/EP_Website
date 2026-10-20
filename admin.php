@@ -161,10 +161,16 @@ if (!is_admin_logged_in()):
             if (e) e.preventDefault();
             sessionStorage.removeItem('ep_admin_logged_in');
             localStorage.removeItem('ep_mock_user');
-            window.location.href = window.location.pathname.endsWith('.html') ? 'admin.html' : 'admin.php?action=logout';
+            fetch('auth_action.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'logout' })
+            }).finally(() => {
+                window.location.href = window.location.pathname.endsWith('.html') ? 'admin.html' : 'admin.php?action=logout';
+            });
         }
 
-        (function checkInitialAuth() {
+        function checkInitialAuth() {
             const isStaticOrPreview = (window.location.protocol === 'file:' || window.location.pathname.endsWith('.html'));
             if (isStaticOrPreview) {
                 const isAuth = sessionStorage.getItem('ep_admin_logged_in') === 'true';
@@ -178,8 +184,16 @@ if (!is_admin_logged_in()):
                     if (cockpitEl) cockpitEl.classList.add('hidden');
                 }
             }
-        })();
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkInitialAuth);
+        } else {
+            checkInitialAuth();
+        }
     </script>
+    <style>
+        #admin-cockpit-view.hidden { display: none !important; }
+    </style>
 <?php
 exit;
 endif;
@@ -190,12 +204,24 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
 <html lang="th">
 <head>
     <script>
-        // ซิงค์สถานะล็อกอินเข้าสู่ localStorage สำหรับสคริปต์หน้าเว็บ
+        // ซิงค์สถานะล็อกอินเข้าสู่ localStorage สำหรับสคริปต์หน้าเว็บ (เฉพาะเมื่อยืนยันตัวตนสำเร็จ)
+        <?php if (is_admin_logged_in()): ?>
         localStorage.setItem('ep_mock_user', JSON.stringify({
             username: "<?php echo htmlspecialchars($_SESSION['ep_admin_user']['username'] ?? 'admin', ENT_QUOTES, 'UTF-8'); ?>",
             name: "<?php echo htmlspecialchars($_SESSION['ep_admin_user']['name'] ?? 'ผู้ดูแลระบบ EP', ENT_QUOTES, 'UTF-8'); ?>",
             role: 'admin'
         }));
+        <?php else: ?>
+        if (sessionStorage.getItem('ep_admin_logged_in') === 'true') {
+            localStorage.setItem('ep_mock_user', JSON.stringify({
+                username: 'admin',
+                name: 'ผู้ดูแลระบบ EP',
+                role: 'admin'
+            }));
+        } else {
+            localStorage.removeItem('ep_mock_user');
+        }
+        <?php endif; ?>
         window.csrfToken = "<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? 'ep_csrf_token', ENT_QUOTES, 'UTF-8'); ?>";
     </script>
     <?php include 'head.php'; ?>

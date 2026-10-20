@@ -209,7 +209,10 @@ const server = http.createServer((req, res) => {
           const u = (data.username || '').trim();
           const p = (data.password || '');
           if (u === 'admin' && p === 'epadmin2026') {
-            res.writeHead(200);
+            res.writeHead(200, {
+              'Set-Cookie': 'ep_admin_session=1; Path=/; Max-Age=86400',
+              'Content-Type': 'application/json; charset=utf-8'
+            });
             res.end(JSON.stringify({ success: true, message: 'เข้าสู่ระบบสำเร็จ' }));
             return;
           } else {
@@ -217,6 +220,15 @@ const server = http.createServer((req, res) => {
             res.end(JSON.stringify({ success: false, message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' }));
             return;
           }
+        }
+
+        if (data.action === 'logout') {
+          res.writeHead(200, {
+            'Set-Cookie': 'ep_admin_session=; Path=/; Max-Age=0',
+            'Content-Type': 'application/json; charset=utf-8'
+          });
+          res.end(JSON.stringify({ success: true, message: 'ออกจากระบบสำเร็จ' }));
+          return;
         }
 
         if (data.action === 'get_maintenance') {
@@ -255,6 +267,21 @@ const server = http.createServer((req, res) => {
 
         res.writeHead(200);
         res.end(JSON.stringify({ success: true }));
+        return;
+      }
+
+      // Check auth for save_inline.php
+      if (req.url.includes('save_inline.php')) {
+        const cookies = req.headers.cookie || '';
+        const isAuth = cookies.includes('ep_admin_session=1');
+        if (!isAuth) {
+          res.writeHead(401, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ success: false, message: 'ปฏิเสธการเข้าถึง: เฉพาะผู้ดูแลระบบที่ล็อกอินแล้วเท่านั้นที่สามารถทำการเขียนบันทึกข้อมูลได้ (Admin Session Required)' }));
+          return;
+        }
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        res.writeHead(200);
+        res.end(JSON.stringify({ success: true, message: 'บันทึกข้อมูลเรียบร้อย (Preview Mock)' }));
         return;
       }
 
