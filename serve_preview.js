@@ -46,6 +46,8 @@ function handleFileChange(filename) {
   debounceTimer = setTimeout(() => {
     console.log(`🔄 [Auto-Sync] ตรวจพบการเปลี่ยนแปลงใน "${filename}" -> กำลังคอมไพล์พรีวิวใหม่...`);
     try {
+      delete require.cache[require.resolve('./compile.js')];
+      const { compile } = require('./compile.js');
       compile(true);
       console.log('✨ [Auto-Sync] คอมไพล์สำเร็จ! กำลังส่งสัญญาณอัปเดตหน้าจอเบราว์เซอร์...');
       broadcastReload();
@@ -133,6 +135,8 @@ function resolveFile(urlPath) {
         const phpMtime = fs.statSync(sourcePhp).mtimeMs;
         const htmlMtime = fs.statSync(targetHtml).mtimeMs;
         if (phpMtime > htmlMtime) {
+          delete require.cache[require.resolve('./compile.js')];
+          const { compile } = require('./compile.js');
           compile(true);
         }
       } catch (e) {}

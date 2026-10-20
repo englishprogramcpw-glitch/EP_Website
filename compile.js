@@ -100,6 +100,9 @@ function processPHPContent(fileContent, pageTitle, currentPage) {
     content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'bg-amber-500 text-slate-950'\s*:\s*'bg-emerald-500 text-white';\s*\?>/g, isMaintActive ? 'bg-amber-500 text-slate-950' : 'bg-emerald-500 text-white');
     content = content.replace(/<\?php\s+echo\s+\$isMaintActive\s*\?\s*'bg-emerald-600 hover:bg-emerald-700 text-white'\s*:\s*'bg-amber-500 hover:bg-amber-600 text-slate-950';\s*\?>/g, isMaintActive ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-amber-500 hover:bg-amber-600 text-slate-950');
 
+    // Remove EP_ADMIN_PREVIEWING_MAINTENANCE banner from preview pages
+    content = content.replace(/<\?php\s+if\s*\(defined\('EP_ADMIN_PREVIEWING_MAINTENANCE'\)\):\s*\?>[\s\S]*?<\?php\s+endif;\s*\?>/g, '');
+
     // 5. Clean up any remaining php blocks
     content = content.replace(/<\?php[\s\S]*?\?>/g, '');
 
