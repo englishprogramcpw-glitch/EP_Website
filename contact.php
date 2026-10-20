@@ -102,6 +102,22 @@ $settings = json_decode(file_get_contents('data/db_site_settings.json'), true);
                             <a href="<?php echo htmlspecialchars($fbUrl); ?>" target="_blank" class="text-brand-500 dark:text-blue-400 hover:text-brand-accent transition font-bold leading-none underline">English Program CPW</a>
                         </div>
                     </div>
+
+                    <!-- LINE Official -->
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/40 flex items-center justify-center shrink-0 text-base text-emerald-600 dark:text-emerald-400">💬</div>
+                        <div class="space-y-1">
+                            <strong class="block text-slate-850 dark:text-slate-200 font-bold">
+                                <span class="lang-th">LINE Official</span>
+                                <span class="lang-en hidden">LINE Official</span>
+                            </strong>
+                            <?php 
+                            $lineVal = !empty($settings['contact']['line']) ? $settings['contact']['line'] : '@epcpw';
+                            $lineUrl = (strpos($lineVal, 'http') === 0) ? $lineVal : 'https://line.me/R/ti/p/' . (strpos($lineVal, '@') === 0 ? $lineVal : '@' . $lineVal);
+                            ?>
+                            <a href="<?php echo htmlspecialchars($lineUrl); ?>" target="_blank" class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 transition font-bold leading-none underline"><?php echo htmlspecialchars($lineVal); ?></a>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Footnote (Working Hours) -->

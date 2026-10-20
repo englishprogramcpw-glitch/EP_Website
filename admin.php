@@ -802,9 +802,15 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
                                         <input type="email" id="setContactEmail" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm" required>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">ลิงก์หรือไอดีเพจ Facebook ของโครงการ EP (Facebook Page URL / ID)</label>
-                                    <input type="text" id="setContactFacebook" placeholder="profile.php?id=100093686707861" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm" required>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">ลิงก์หรือไอดีเพจ Facebook ของโครงการ EP (Facebook Page URL / ID)</label>
+                                        <input type="text" id="setContactFacebook" placeholder="profile.php?id=100093686707861" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">LINE Official Account (LINE ID / URL)</label>
+                                        <input type="text" id="setContactLine" placeholder="@epcpw หรือ https://line.me/R/ti/p/@epcpw" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 text-sm">
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">ที่ตั้งโครงการ (ภาษาไทย)</label>
@@ -2271,6 +2277,7 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
                     document.getElementById('setContactPhone').value = data.contact.phone || '';
                     document.getElementById('setContactEmail').value = data.contact.email || '';
                     document.getElementById('setContactFacebook').value = data.contact.facebook || '';
+                    document.getElementById('setContactLine').value = data.contact.line || '';
                     document.getElementById('setContactAddressTh').value = data.contact.address_th || '';
                     document.getElementById('setContactAddressEn').value = data.contact.address_en || '';
                     
@@ -2370,6 +2377,7 @@ $pageTitle = "ระบบหลังบ้านผู้ดูแลระบ
             adminSiteSettings.contact.phone = document.getElementById('setContactPhone').value;
             adminSiteSettings.contact.email = document.getElementById('setContactEmail').value;
             adminSiteSettings.contact.facebook = document.getElementById('setContactFacebook').value;
+            adminSiteSettings.contact.line = document.getElementById('setContactLine').value;
             adminSiteSettings.contact.address_th = document.getElementById('setContactAddressTh').value;
             adminSiteSettings.contact.address_en = document.getElementById('setContactAddressEn').value;
             

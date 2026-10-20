@@ -112,6 +112,8 @@ function processPHPContent(fileContent, pageTitle, currentPage) {
         const mapUrl = c.map_url || 'https://maps.google.com/?q=VGX6%2B88R+ตำบลบางตลาด+อำเภอปากเกร็ด+นนทบุรี';
         const fbVal = c.facebook || 'profile.php?id=100093686707861';
         const fbUrl = fbVal.startsWith('http') ? fbVal : 'https://www.facebook.com/' + fbVal.replace(/^\/+/, '');
+        const lineVal = c.line || '@epcpw';
+        const lineUrl = lineVal.startsWith('http') ? lineVal : 'https://line.me/R/ti/p/' + (lineVal.startsWith('@') ? lineVal : '@' + lineVal);
 
         content = content.replace(/<\?php\s+echo\s+\$settings\['contact'\]\['address_th'\];\s*\?>/g, addressTh);
         content = content.replace(/<\?php\s+echo\s+\$settings\['contact'\]\['address_en'\];\s*\?>/g, addressEn);
@@ -120,6 +122,10 @@ function processPHPContent(fileContent, pageTitle, currentPage) {
         
         content = content.replace(/<\?php\s+\$fbVal\s*=[\s\S]*?\$fbUrl\s*=[\s\S]*?\?>/g, '');
         content = content.replace(/<\?php\s+echo\s+htmlspecialchars\(\$fbUrl\);\s*\?>/g, fbUrl);
+
+        content = content.replace(/<\?php\s+\$lineVal\s*=[\s\S]*?\$lineUrl\s*=[\s\S]*?\?>/g, '');
+        content = content.replace(/<\?php\s+echo\s+htmlspecialchars\(\$lineUrl\);\s*\?>/g, lineUrl);
+        content = content.replace(/<\?php\s+echo\s+htmlspecialchars\(\$lineVal\);\s*\?>/g, lineVal);
 
         content = content.replace(/<\?php\s+echo\s+isset\(\$settings\['contact'\]\['building_guide_th'\]\)[\s\S]*?\?>/g, guideTh);
         content = content.replace(/<\?php\s+echo\s+isset\(\$settings\['contact'\]\['building_guide_en'\]\)[\s\S]*?\?>/g, guideEn);
